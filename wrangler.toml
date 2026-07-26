@@ -1,0 +1,8 @@
+name = "pollup"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "POLLUP_DB"
+database_name = "pollup-db"
+database_id = "20204a17-7046-41e6-931e-987675d893d0"
