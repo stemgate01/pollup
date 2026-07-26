@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PollUp — Create Beautiful Polls in Seconds</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Roboto',-apple-system,sans-serif;background:#fff;color:#202124;line-height:1.5;min-height:100vh;display:flex;flex-direction:column}
+a{color:#1a73e8;text-decoration:none}
+
+header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #e8eaed;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.logo-area{display:flex;align-items:center;gap:10px;font-family:'Google Sans',sans-serif;font-weight:500;font-size:22px;color:#202124}
+.logo-area svg{width:32px;height:32px}
+.nav-links{display:flex;align-items:center;gap:8px}
+.nav-links a,.nav-links button{padding:8px 16px;border-radius:24px;font-size:14px;font-weight:500;transition:background 0.15s;color:#202124;background:none;border:none;cursor:pointer;text-decoration:none;font-family:inherit}
+.nav-links a:hover,.nav-links button:hover{background:#f1f3f4}
+.btn-primary{background:#1a73e8!important;color:#fff!important}
+.btn-primary:hover{background:#1557b0!important}
+.btn-outline{border:1px solid #dadce0!important}
+
+.hero{padding:80px 24px 60px;text-align:center;max-width:720px;margin:0 auto;flex:1}
+.hero h1{font-family:'Google Sans',sans-serif;font-size:48px;font-weight:500;line-height:1.2;margin-bottom:16px;letter-spacing:-0.5px}
+.hero p{font-size:18px;color:#5f6368;margin-bottom:40px;max-width:520px;margin-left:auto;margin-right:auto}
+.hero-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.hero-buttons a,.hero-buttons button{padding:12px 32px;border-radius:24px;font-size:15px;font-weight:500;display:inline-block;cursor:pointer;font-family:inherit}
+
+.features{padding:60px 24px;max-width:1100px;margin:0 auto}
+.features h2{font-family:'Google Sans',sans-serif;font-size:32px;text-align:center;margin-bottom:48px}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px}
+.feature-card{padding:28px;border:1px solid #e8eaed;border-radius:12px;transition:box-shadow 0.2s}
+.feature-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.06)}
+.feature-card svg{width:36px;height:36px;margin-bottom:16px;color:#1a73e8}
+.feature-card h3{font-family:'Google Sans',sans-serif;font-size:17px;margin-bottom:8px}
+.feature-card p{color:#5f6368;font-size:14px}
+
+footer{background:#f8f9fa;border-top:1px solid #e8eaed;padding:48px 24px 24px}
+.footer-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:32px}
+.footer-col h4{font-size:13px;font-weight:500;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;color:#5f6368}
+.footer-col a{display:block;font-size:13px;color:#5f6368;margin-bottom:8px}
+.footer-col a:hover{color:#202124}
+.footer-bottom{max-width:1100px;margin:32px auto 0;padding-top:24px;border-top:1px solid #e8eaed;text-align:center;font-size:12px;color:#9aa0a6}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:12px;padding:32px;width:90%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,0.12);max-height:90vh;overflow-y:auto}
+.modal h2{font-family:'Google Sans',sans-serif;font-size:22px;margin-bottom:20px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:#5f6368}
+.form-group input{width:100%;padding:10px 14px;border:1px solid #dadce0;border-radius:8px;font-size:14px;transition:border 0.15s;font-family:inherit}
+.form-group input:focus{outline:none;border-color:#1a73e8;box-shadow:0 0 0 2px rgba(26,115,232,0.12)}
+.form-submit{width:100%;padding:12px;background:#1a73e8;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit}
+.form-submit:hover{background:#1557b0}
+.form-submit:disabled{opacity:0.6;cursor:not-allowed}
+.modal-footer-text{text-align:center;margin-top:16px;font-size:13px;color:#5f6368}
+.modal-footer-text a{color:#1a73e8;font-weight:500;cursor:pointer}
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
+.alert-error{background:#fce8e6;color:#c5221f;display:block}
+.alert-success{background:#e6f4ea;color:#137333;display:block}
+
+@media(max-width:600px){.hero h1{font-size:32px}.hero p{font-size:16px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#1a73e8"/><path d="M8 14h6v10H8zM13 8h6v16h-6zM18 11h6v13h-6z" fill="#fff" opacity="0.9"/></svg>
+    PollUp
+  </div>
+  <nav class="nav-links">
+    <a href="javascript:void(0)" onclick="openModal('login')">Sign in</a>
+    <a href="javascript:void(0)" onclick="openModal('signup')" class="btn-primary">Get started</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <h1>Create beautiful polls in seconds</h1>
+  <p>Embed anywhere. Collect votes. See instant results. Free forever.</p>
+  <div class="hero-buttons">
+    <button onclick="openModal('signup')" class="btn-primary">Start for free</button>
+    <a href="#features" class="btn-outline">See features</a>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <h2>Everything you need</h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8M8 12h8"/></svg>
+      <h3>Instant creation</h3><p>Create a poll in under 30 seconds. No signup required for voting.</p>
+    </div>
+    <div class="feature-card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+      <h3>Embed anywhere</h3><p>One line of code. Your poll blends into any website seamlessly.</p>
+    </div>
+    <div class="feature-card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <h3>Real-time results</h3><p>Watch votes flow in. Beautiful bar charts update instantly.</p>
+    </div>
+    <div class="feature-card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      <h3>Double-vote protection</h3><p>Fingerprint + IP verification. Every vote counts once.</p>
+    </div>
+    <div class="feature-card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <h3>Auto-cleanup</h3><p>Ended polls auto-delete after 7 days. Zero clutter.</p>
+    </div>
+    <div class="feature-card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <h3>Free / Pro / Max</h3><p>Start free. Upgrade when you need more. No hidden fees.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col"><h4>PollUp</h4><a href="#">About</a><a href="#">Blog</a></div>
+    <div class="footer-col"><h4>Product</h4><a href="#">Features</a><a href="#">Embed Widget</a><a href="#">Pricing</a></div>
+    <div class="footer-col"><h4>Support</h4><a href="#">Help Center</a><a href="#">Contact</a><a href="#">Privacy</a></div>
+    <div class="footer-col"><h4>Legal</h4><a href="#">Terms</a><a href="#">Privacy Policy</a></div>
+  </div>
+  <div class="footer-bottom">2024 PollUp. All rights reserved.</div>
+</footer>
+
+<!-- Login Modal -->
+<div class="modal-overlay" id="modal-login">
+  <div class="modal">
+    <h2>Sign in</h2>
+    <div id="login-alert" class="alert"></div>
+    <form id="login-form">
+      <div class="form-group"><label>Email</label><input type="email" id="login-email" required></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-password" required minlength="6"></div>
+      <button type="submit" class="form-submit">Sign in</button>
+    </form>
+    <p class="modal-footer-text">No account? <a onclick="switchModal('signup')">Sign up</a></p>
+  </div>
+</div>
+
+<!-- Signup Modal -->
+<div class="modal-overlay" id="modal-signup">
+  <div class="modal">
+    <h2>Create account</h2>
+    <div id="signup-alert" class="alert"></div>
+    <form id="signup-form">
+      <div class="form-group"><label>Name</label><input type="text" id="signup-name" required></div>
+      <div class="form-group"><label>Email</label><input type="email" id="signup-email" required></div>
+      <div class="form-group"><label>Password</label><input type="password" id="signup-password" required minlength="6"></div>
+      <button type="submit" class="form-submit">Create account</button>
+    </form>
+    <p class="modal-footer-text">Already have an account? <a onclick="switchModal('login')">Sign in</a></p>
+  </div>
+</div>
+
+<script>
+const API = '/api';
+function openModal(t) { document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('active')); document.getElementById('modal-'+t).classList.add('active'); }
+function switchModal(t) { openModal(t); }
+document.querySelectorAll('.modal-overlay').forEach(o=>{ o.addEventListener('click',function(e){ if(e.target===this) this.classList.remove('active'); }); });
+
+document.getElementById('login-form').addEventListener('submit',async function(e){
+  e.preventDefault();
+  const a=document.getElementById('login-alert'); a.className='alert';
+  const b=this.querySelector('button'); b.disabled=true; b.textContent='Signing in...';
+  const r=await fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('login-email').value,password:document.getElementById('login-password').value})});
+  const d=await r.json();
+  if(r.ok){ localStorage.setItem('pollup_token',d.token); localStorage.setItem('pollup_user',JSON.stringify(d.user)); window.location.href='/app.html'; }
+  else { a.className='alert alert-error'; a.textContent=d.error||'Login failed'; }
+  b.disabled=false; b.textContent='Sign in';
+});
+
+document.getElementById('signup-form').addEventListener('submit',async function(e){
+  e.preventDefault();
+  const a=document.getElementById('signup-alert'); a.className='alert';
+  const b=this.querySelector('button'); b.disabled=true; b.textContent='Creating...';
+  const r=await fetch(API+'/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:document.getElementById('signup-name').value,email:document.getElementById('signup-email').value,password:document.getElementById('signup-password').value})});
+  const d=await r.json();
+  if(r.ok){ localStorage.setItem('pollup_token',d.token); localStorage.setItem('pollup_user',JSON.stringify(d.user)); window.location.href='/app.html'; }
+  else { a.className='alert alert-error'; a.textContent=d.error||'Signup failed'; }
+  b.disabled=false; b.textContent='Create account';
+});
+</script>
+</body>
+</html>
