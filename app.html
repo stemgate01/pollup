@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PollUp — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff;
+  --surface: #f8f9fa;
+  --surface2: #f1f3f4;
+  --surface3: #e8eaed;
+  --border: #e8eaed;
+  --border2: #dadce0;
+  --accent: #1a73e8;
+  --accent2: #1557b0;
+  --accent-dim: rgba(26,115,232,0.08);
+  --white: #ffffff;
+  --text: #202124;
+  --gray: #5f6368;
+  --gray2: #9aa0a6;
+  --red: #d93025;
+  --red-dim: rgba(217,48,37,0.08);
+  --green: #137333;
+  --green-dim: rgba(19,115,51,0.08);
+  --orange: #e37400;
+  --orange-dim: rgba(227,116,0,0.08);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --transition: 0.15s cubic-bezier(0.4,0,0.2,1);
+  --sidebar-w: 260px;
+  --header-h: 64px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Roboto',-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.5;
+  min-height:100vh;
+  display:flex;
+}
+a{color:var(--accent);text-decoration:none}
+
+/* Sidebar */
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;
+  width:var(--sidebar-w);
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  z-index:200;
+  display:flex;flex-direction:column;
+  transition:transform var(--transition);
+  overflow-y:auto;
+}
+.sidebar-header{
+  height:var(--header-h);
+  display:flex;align-items:center;gap:10px;
+  padding:0 20px;
+  font-family:'Google Sans',sans-serif;
+  font-weight:500;font-size:18px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.sidebar-header svg{width:28px;height:28px}
+.sidebar-nav{flex:1;padding:12px}
+.sidebar-nav button{
+  display:flex;align-items:center;gap:12px;
+  width:100%;padding:10px 14px;border:none;
+  border-radius:var(--radius);background:none;
+  font-size:14px;color:var(--text);cursor:pointer;
+  transition:background var(--transition);
+  text-align:left;font-family:inherit;
+}
+.sidebar-nav button:hover{background:var(--surface2)}
+.sidebar-nav button.active{background:var(--accent-dim);color:var(--accent);font-weight:500}
+.sidebar-nav button svg{width:20px;height:20px;flex-shrink:0}
+.sidebar-user{
+  padding:16px 20px;border-top:1px solid var(--border);
+  font-size:13px;
+}
+.sidebar-user .user-plan{
+  display:inline-block;padding:2px 8px;border-radius:12px;
+  font-size:11px;font-weight:500;margin-top:4px;
+  background:var(--accent-dim);color:var(--accent);
+}
+.sidebar-user .user-plan.pro{background:var(--green-dim);color:var(--green)}
+.sidebar-user .user-plan.max{background:var(--orange-dim);color:var(--orange)}
+
+/* Main */
+.main{
+  margin-left:var(--sidebar-w);
+  flex:1;min-width:0;
+}
+.topbar{
+  position:sticky;top:0;z-index:100;
+  height:var(--header-h);
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  justify-content:space-between;
+  padding:0 24px;
+}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.hamburger{
+  display:none;background:none;border:none;
+  cursor:pointer;padding:4px;border-radius:var(--radius);
+  color:var(--text);
+}
+.hamburger:hover{background:var(--surface2)}
+.hamburger svg{width:24px;height:24px}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.topbar-right button{
+  background:none;border:none;cursor:pointer;
+  padding:6px;border-radius:50%;color:var(--gray);
+  transition:background var(--transition);
+  display:flex;
+}
+.topbar-right button:hover{background:var(--surface2)}
+
+.page-content{padding:24px;max-width:1100px}
+
+/* Views */
+.view{display:none}
+.view.active{display:block}
+
+/* Cards */
+.card{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:24px;
+  margin-bottom:16px;
+}
+.card h3{
+  font-family:'Google Sans',sans-serif;
+  font-size:18px;margin-bottom:16px;
+}
+.card h2{
+  font-family:'Google Sans',sans-serif;
+  font-size:24px;margin-bottom:8px;
+}
+
+/* Stats */
+.stat-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;margin-bottom:24px;
+}
+.stat-card{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:20px;
+}
+.stat-card .stat-value{
+  font-family:'Google Sans',sans-serif;
+  font-size:28px;font-weight:500;
+}
+.stat-card .stat-label{
+  font-size:13px;color:var(--gray);margin-top:4px;
+}
+
+/* Tables */
+table{width:100%;border-collapse:collapse}
+th,td{
+  text-align:left;padding:10px 14px;
+  border-bottom:1px solid var(--border);
+  font-size:13px;
+}
+th{font-weight:500;color:var(--gray);font-size:12px;text-transform:uppercase;letter-spacing:0.3px}
+tr:hover td{background:var(--surface)}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:20px;
+  font-size:13px;font-weight:500;cursor:pointer;
+  border:none;transition:all var(--transition);
+  background:var(--surface2);color:var(--text);
+  text-decoration:none;font-family:inherit;
+}
+.btn:hover{background:var(--surface3)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2)}
+.btn-danger{background:var(--red-dim);color:var(--red)}
+.btn-danger:hover{background:rgba(217,48,37,0.15)}
+.btn-success{background:var(--green-dim);color:var(--green)}
+.btn-sm{padding:4px 12px;font-size:12px;border-radius:14px}
+
+/* Forms */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:13px;font-weight:500;margin-bottom:5px;color:var(--gray)}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;padding:10px 14px;
+  border:1px solid var(--border2);
+  border-radius:var(--radius);
+  font-size:14px;font-family:inherit;
+  transition:border var(--transition);
+  background:var(--white);
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+  outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 2px var(--accent-dim);
+}
+textarea{resize:vertical;min-height:60px}
+
+/* Poll bars */
+.poll-bar{
+  height:8px;border-radius:4px;
+  background:var(--surface3);
+  overflow:hidden;margin-top:4px;
+}
+.poll-bar-fill{
+  height:100%;border-radius:4px;
+  transition:width 0.5s cubic-bezier(0.4,0,0.2,1);
+  background:var(--accent);
+}
+
+/* Modal */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.4);z-index:300;
+  align-items:center;justify-content:center;
+}
+.modal-overlay.active{display:flex}
+.modal{
+  background:var(--white);
+  border-radius:var(--radius-lg);
+  padding:32px;width:90%;max-width:480px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.12);
+  max-height:90vh;overflow-y:auto;
+}
+.modal h3{font-family:'Google Sans',sans-serif;font-size:20px;margin-bottom:20px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;
+  padding:12px 20px;border-radius:var(--radius-lg);
+  font-size:13px;font-weight:500;z-index:400;
+  opacity:0;transform:translateY(20px);
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+  pointer-events:none;
+  box-shadow:0 4px 16px rgba(0,0,0,0.12);
+}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast-success{background:var(--green);color:#fff}
+.toast-error{background:var(--red);color:#fff}
+.toast-info{background:var(--accent);color:#fff}
+
+/* Alert */
+.alert{
+  padding:10px 14px;border-radius:var(--radius);
+  font-size:13px;margin-bottom:14px;display:none;
+}
+.alert-error{background:var(--red-dim);color:var(--red);display:block}
+.alert-success{background:var(--green-dim);color:var(--green);display:block}
+
+/* Spinner */
+.spinner{
+  width:24px;height:24px;border:3px solid var(--surface3);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin 0.6s linear infinite;
+  margin:40px auto;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Empty state */
+.empty-state{
+  text-align:center;padding:48px 20px;
+}
+.empty-state svg{width:64px;height:64px;color:var(--gray2);margin-bottom:16px}
+.empty-state h4{font-family:'Google Sans',sans-serif;font-size:18px;margin-bottom:8px}
+.empty-state p{color:var(--gray);font-size:14px;max-width:400px;margin:0 auto 20px}
+
+/* Badge */
+.badge{
+  display:inline-block;padding:2px 8px;border-radius:10px;
+  font-size:11px;font-weight:500;
+}
+.badge-free{background:var(--surface2);color:var(--gray)}
+.badge-pro{background:var(--green-dim);color:var(--green)}
+.badge-max{background:var(--orange-dim);color:var(--orange)}
+.badge-active{background:var(--green-dim);color:var(--green)}
+.badge-ended{background:var(--surface2);color:var(--gray)}
+.badge-blocked{background:var(--red-dim);color:var(--red)}
+
+/* Share section */
+.share-section{
+  background:var(--surface);
+  border-radius:var(--radius);
+  padding:16px;margin-top:16px;
+}
+.share-link-box{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;background:var(--white);
+  border:1px solid var(--border2);border-radius:var(--radius);
+  font-family:monospace;font-size:13px;
+  word-break:break-all;
+}
+.copy-btn{
+  padding:6px 12px;border-radius:16px;
+  font-size:12px;cursor:pointer;border:none;
+  background:var(--accent);color:#fff;font-weight:500;
+  white-space:nowrap;
+}
+.copy-btn:hover{background:var(--accent2)}
+
+/* Search */
+.search-box{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 14px;border:1px solid var(--border2);
+  border-radius:24px;background:var(--white);
+  transition:border var(--transition);margin-bottom:16px;
+  max-width:400px;
+}
+.search-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-dim)}
+.search-box input{
+  border:none;outline:none;flex:1;
+  font-size:13px;background:none;color:var(--text);
+}
+.search-box svg{width:18px;height:18px;color:var(--gray);flex-shrink:0}
+
+/* Responsive */
+@media(max-width:860px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .hamburger{display:flex}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:500px){
+  .stat-grid{grid-template-columns:1fr}
+  .page-content{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <svg viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="#1a73e8"/><path d="M7 12h5v9H7zM11 7h5v14h-5zM15 10h6v11h-6z" fill="#fff" opacity="0.9"/></svg>
+    PollUp
+  </div>
+  <nav class="sidebar-nav" id="sidebar-nav">
+    <button data-view="dashboard" class="active" onclick="showView('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
+    <button data-view="create" onclick="showView('create')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+      New Poll
+    </button>
+    <button data-view="mypolls" onclick="showView('mypolls')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+      My Polls
+    </button>
+    <button data-view="settings" onclick="showView('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Settings
+    </button>
+  </nav>
+  <div class="sidebar-user">
+    <div id="sidebar-user-name" style="font-weight:500">User</div>
+    <div id="sidebar-user-email" style="font-size:11px;color:var(--gray)">user@email.com</div>
+    <span class="user-plan" id="sidebar-user-plan">Free</span>
+    <button onclick="signOut()" style="display:block;margin-top:8px;background:none;border:none;color:var(--red);font-size:12px;cursor:pointer;font-family:inherit">Sign out</button>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <span id="view-title" style="font-family:'Google Sans',sans-serif;font-size:18px;font-weight:500">Dashboard</span>
+    </div>
+    <div class="topbar-right">
+      <button id="btn-upgrade" onclick="showUpgradeModal()" style="font-size:12px;padding:6px 12px;background:var(--accent-dim);color:var(--accent);border-radius:16px;font-weight:500;border:none;cursor:pointer;font-family:inherit">Upgrade</button>
+    </div>
+  </header>
+
+  <div class="page-content" id="page-content">
+
+    <!-- VIEW: Dashboard -->
+    <div class="view active" id="view-dashboard">
+      <div class="stat-grid" id="dash-stats">
+        <div class="stat-card"><div class="stat-value" id="stat-polls">—</div><div class="stat-label">Active polls</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-total-polls">—</div><div class="stat-label">Total polls</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-plan">Free</div><div class="stat-label">Current plan</div></div>
+      </div>
+      <div class="card">
+        <h3>Quick actions</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="showView('create')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+            Create poll
+          </button>
+          <button class="btn" onclick="showView('mypolls')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+            My polls
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: Create Poll -->
+    <div class="view" id="view-create">
+      <div class="card" style="max-width:640px">
+        <h3>Create a new poll</h3>
+        <div id="create-alert" class="alert"></div>
+        <form id="create-poll-form">
+          <div class="form-group"><label>Question / Title</label><input type="text" id="poll-title" placeholder="What's your favorite...?" required></div>
+          <div class="form-group">
+            <label>Options</label>
+            <div id="options-container">
+              <div style="display:flex;gap:8px;margin-bottom:6px"><input type="text" class="poll-option" placeholder="Option 1" required><button type="button" class="btn btn-sm btn-danger remove-option" style="display:none" onclick="removeOption(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+              <div style="display:flex;gap:8px;margin-bottom:6px"><input type="text" class="poll-option" placeholder="Option 2" required><button type="button" class="btn btn-sm btn-danger remove-option" style="display:none" onclick="removeOption(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+            </div>
+            <button type="button" class="btn btn-sm" onclick="addOption()" style="margin-top:6px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+              Add option
+            </button>
+          </div>
+          <div class="form-group"><label><input type="checkbox" id="poll-multiple" style="width:auto;margin-right:6px"> Allow multiple choices</label></div>
+          <div class="form-group"><label>Accent color</label><input type="color" id="poll-color" value="#1a73e8" style="width:60px;height:36px;padding:2px"></div>
+          <div class="form-group"><label>End date (optional)</label><input type="datetime-local" id="poll-ends"></div>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px">Create poll</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- VIEW: My Polls -->
+    <div class="view" id="view-mypolls">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <h3 style="font-family:'Google Sans',sans-serif;font-size:20px">My Polls</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" id="mypolls-search" placeholder="Search polls..." oninput="filterMyPolls()">
+          </div>
+          <button class="btn btn-primary" onclick="showView('create')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+            New poll
+          </button>
+        </div>
+      </div>
+      <div id="mypolls-list"><div class="spinner"></div></div>
+    </div>
+
+    <!-- VIEW: Settings -->
+    <div class="view" id="view-settings">
+      <div class="card" style="max-width:500px">
+        <h3>Account settings</h3>
+        <div id="settings-alert" class="alert"></div>
+        <div class="form-group"><label>Name</label><input type="text" id="settings-name"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="settings-email" disabled style="opacity:0.7"></div>
+        <div class="form-group"><label>New password (leave blank to keep)</label><input type="password" id="settings-password" placeholder="Min 6 characters" minlength="6"></div>
+        <button class="btn btn-primary" onclick="saveSettings()">Save changes</button>
+      </div>
+      <div class="card" style="max-width:500px">
+        <h3>Your plan</h3>
+        <p id="settings-plan-detail" style="color:var(--gray);font-size:14px"></p>
+        <button class="btn btn-primary" onclick="showUpgradeModal()">Upgrade plan</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Generic Modal -->
+<div class="modal-overlay" id="gModal">
+  <div class="modal">
+    <h3 id="gModal-title">Modal</h3>
+    <div id="gModal-body"></div>
+    <div id="gModal-footer" class="modal-actions"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// AUTH CHECK
+// ============================================================
+const token = localStorage.getItem('pollup_token');
+const user = JSON.parse(localStorage.getItem('pollup_user') || 'null');
+if (!token || !user) { window.location.href = '/index.html'; }
+
+const API = '/api';
+let currentView = 'dashboard';
+let allMyPolls = [];
+
+// ============================================================
+// HELPERS
+// ============================================================
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = String(s || '');
+  return d.innerHTML;
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast toast-${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+async function api(method, path, body) {
+  try {
+    const opts = { method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }};
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(API + path, opts);
+    const data = await res.json();
+    return { ok: res.ok, data, status: res.status };
+  } catch(e) {
+    return { ok: false, data: { error: 'Network error. Please try again.' }, status: 0 };
+  }
+}
+
+function openModal(title, bodyHtml, footerHtml) {
+  document.getElementById('gModal-title').textContent = title;
+  document.getElementById('gModal-body').innerHTML = bodyHtml;
+  document.getElementById('gModal-footer').innerHTML = footerHtml;
+  document.getElementById('gModal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('gModal').classList.remove('active');
+}
+
+document.getElementById('gModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function signOut() {
+  localStorage.removeItem('pollup_token');
+  localStorage.removeItem('pollup_user');
+  window.location.href = '/index.html';
+}
+
+// ============================================================
+// VIEW SWITCHING
+// ============================================================
+function showView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const target = document.getElementById('view-' + view);
+  if (target) target.classList.add('active');
+
+  document.querySelectorAll('#sidebar-nav button').forEach(b => b.classList.remove('active'));
+  const navBtn = document.querySelector(`[data-view="${view}"]`);
+  if (navBtn) navBtn.classList.add('active');
+
+  currentView = view;
+  const titles = {
+    dashboard: 'Dashboard', create: 'New Poll', mypolls: 'My Polls',
+    settings: 'Settings'
+  };
+  document.getElementById('view-title').textContent = titles[view] || view;
+
+  document.getElementById('sidebar').classList.remove('open');
+
+  if (view === 'dashboard') loadDashboard();
+  if (view === 'mypolls') loadMyPolls();
+  if (view === 'settings') loadSettings();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  document.getElementById('sidebar-user-name').textContent = user.name;
+  document.getElementById('sidebar-user-email').textContent = user.email;
+  const planEl = document.getElementById('sidebar-user-plan');
+  const planName = (user.plan || 'free').charAt(0).toUpperCase() + (user.plan || 'free').slice(1);
+  planEl.textContent = planName;
+  planEl.className = 'user-plan ' + (user.plan || 'free');
+
+  document.getElementById('btn-upgrade').textContent = user.plan === 'free' ? 'Upgrade to Pro' : (user.plan === 'pro' ? 'Upgrade to Max' : 'You are on Max');
+
+  loadDashboard();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function loadDashboard() {
+  const { ok, data } = await api('GET', '/polls');
+  if (ok) {
+    const polls = data.polls || [];
+    allMyPolls = polls;
+    const activePolls = polls.filter(p => p.sts === 1);
+    document.getElementById('stat-polls').textContent = activePolls.length;
+    document.getElementById('stat-total-polls').textContent = polls.length;
+    document.getElementById('stat-plan').textContent = (user.plan || 'free').charAt(0).toUpperCase() + (user.plan || 'free').slice(1);
+  }
+}
+
+// ============================================================
+// CREATE POLL
+// ============================================================
+let optionCount = 2;
+
+function addOption() {
+  optionCount++;
+  const container = document.getElementById('options-container');
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:8px;margin-bottom:6px';
+  div.innerHTML = `<input type="text" class="poll-option" placeholder="Option ${optionCount}" required><button type="button" class="btn btn-sm btn-danger remove-option" onclick="removeOption(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+  container.appendChild(div);
+  updateRemoveButtons();
+}
+
+function removeOption(btn) {
+  const container = document.getElementById('options-container');
+  if (container.children.length <= 2) return;
+  btn.parentElement.remove();
+  updateRemoveButtons();
+}
+
+function updateRemoveButtons() {
+  const container = document.getElementById('options-container');
+  const buttons = container.querySelectorAll('.remove-option');
+  buttons.forEach(b => b.style.display = container.children.length <= 2 ? 'none' : 'inline-flex');
+}
+
+document.getElementById('create-poll-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const alertEl = document.getElementById('create-alert');
+  alertEl.className = 'alert';
+  const btn = this.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:6px;"></span>Creating...';
+
+  const options = Array.from(document.querySelectorAll('.poll-option')).map(i => i.value.trim()).filter(v => v);
+  if (options.length < 2) {
+    alertEl.className = 'alert alert-error';
+    alertEl.textContent = 'At least 2 options required';
+    btn.disabled = false;
+    btn.textContent = 'Create poll';
+    return;
+  }
+
+  const body = {
+    title: document.getElementById('poll-title').value.trim(),
+    options,
+    multiple: document.getElementById('poll-multiple').checked,
+    color: document.getElementById('poll-color').value,
+    endsAt: document.getElementById('poll-ends').value ? new Date(document.getElementById('poll-ends').value).getTime() : null
+  };
+
+  const { ok, data } = await api('POST', '/polls', body);
+  if (ok) {
+    showToast('Poll created successfully', 'success');
+    this.reset();
+    optionCount = 2;
+    document.getElementById('options-container').innerHTML = `
+      <div style="display:flex;gap:8px;margin-bottom:6px"><input type="text" class="poll-option" placeholder="Option 1" required><button type="button" class="btn btn-sm btn-danger remove-option" style="display:none" onclick="removeOption(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+      <div style="display:flex;gap:8px;margin-bottom:6px"><input type="text" class="poll-option" placeholder="Option 2" required><button type="button" class="btn btn-sm btn-danger remove-option" style="display:none" onclick="removeOption(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    `;
+    // Show share modal
+    showShareModal(data.poll);
+  } else {
+    alertEl.className = 'alert alert-error';
+    alertEl.textContent = data.error || 'Failed to create poll';
+  }
+  btn.disabled = false;
+  btn.innerHTML = 'Create poll';
+});
+
+// ============================================================
+// SHARE MODAL
+// ============================================================
+function showShareModal(poll) {
+  const pollUrl = `${window.location.origin}/poll/${poll.slg}`;
+  const embedCode = `<script src="${window.location.origin}/embed.js" data-poll="${poll.slg}"><\/script>`;
+  
+  const bodyHtml = `
+    <div class="share-section">
+      <label style="font-size:12px;font-weight:500;color:var(--gray);display:block;margin-bottom:6px">Share link</label>
+      <div class="share-link-box">
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(pollUrl)}</span>
+        <button class="copy-btn" onclick="copyToClipboard('${esc(pollUrl)}')">Copy</button>
+      </div>
+    </div>
+    <div class="share-section">
+      <label style="font-size:12px;font-weight:500;color:var(--gray);display:block;margin-bottom:6px">Embed code</label>
+      <div class="share-link-box" style="flex-direction:column;align-items:stretch;gap:8px">
+        <code style="font-size:11px;word-break:break-all;color:var(--text)">${esc(embedCode)}</code>
+        <button class="copy-btn" onclick="copyToClipboard('${esc(embedCode.replace(/'/g, "\\'"))}')" style="align-self:flex-end">Copy code</button>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--gray);margin-top:12px">Anyone with the link can vote. No login required.</p>
+  `;
+  const footerHtml = `
+    <button class="btn" onclick="closeModal()">Close</button>
+    <button class="btn btn-primary" onclick="closeModal();showView('mypolls')">View all polls</button>
+  `;
+  openModal('Poll created', bodyHtml, footerHtml);
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Copied to clipboard', 'success');
+  }).catch(() => {
+    showToast('Failed to copy', 'error');
+  });
+}
+
+// ============================================================
+// MY POLLS
+// ============================================================
+async function loadMyPolls() {
+  const container = document.getElementById('mypolls-list');
+  container.innerHTML = '<div class="spinner"></div>';
+
+  const { ok, data } = await api('GET', '/polls');
+  if (!ok) {
+    container.innerHTML = '<div class="empty-state"><p style="color:var(--red)">Failed to load polls</p></div>';
+    return;
+  }
+
+  allMyPolls = data.polls || [];
+  renderMyPolls(allMyPolls);
+}
+
+function renderMyPolls(polls) {
+  const container = document.getElementById('mypolls-list');
+  
+  if (polls.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+        <h4>No polls yet</h4>
+        <p>Create your first poll and share it with the world.</p>
+        <button class="btn btn-primary" onclick="showView('create')">Create poll</button>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = polls.map(p => {
+    const opts = p.opt || [];
+    const statusBadge = p.sts === 1 ? '<span class="badge badge-active">Active</span>' :
+                        p.sts === 2 ? '<span class="badge badge-ended">Ended</span>' :
+                        '<span class="badge badge-blocked">Blocked</span>';
+    const pollUrl = `${window.location.origin}/poll/${p.slg}`;
+    
+    return `
+      <div class="card" style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+          <div style="flex:1;min-width:200px">
+            <h4 style="font-family:'Google Sans',sans-serif;font-size:16px;margin-bottom:4px">${esc(p.tit)}</h4>
+            <p style="font-size:12px;color:var(--gray);margin-bottom:4px">${opts.length} options ${statusBadge} Created ${new Date(p.cat).toLocaleDateString()}</p>
+            <p style="font-size:11px;color:var(--gray2);word-break:break-all">${esc(pollUrl)}</p>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <button class="btn btn-sm" onclick="copyToClipboard('${esc(pollUrl)}')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              Link
+            </button>
+            <button class="btn btn-sm" onclick="showEmbedModal('${p.slg}')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              Embed
+            </button>
+            ${p.sts === 1 ? `<button class="btn btn-sm btn-danger" onclick="closePoll('${p.id}')">Close</button>` : ''}
+            <button class="btn btn-sm btn-danger" onclick="deletePoll('${p.id}')">Delete</button>
+          </div>
+        </div>
+        ${p.sts === 2 && p.snap ? renderResultsInCard(JSON.parse(p.snap)) : ''}
+      </div>`;
+  }).join('');
+}
+
+function renderResultsInCard(results) {
+  const total = results.reduce((s, r) => s + (r.count || 0), 0);
+  return `
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <p style="font-size:11px;color:var(--gray);margin-bottom:8px">Final results — ${total} vote${total !== 1 ? 's' : ''}</p>
+      ${results.map(r => `
+        <div style="margin-bottom:6px">
+          <div style="display:flex;justify-content:space-between;font-size:12px">
+            <span>${esc(r.text)}</span><span style="color:var(--gray)">${r.count}</span>
+          </div>
+          <div class="poll-bar"><div class="poll-bar-fill" style="width:${total > 0 ? Math.round((r.count/total)*100) : 0}%;background:var(--accent)"></div></div>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+function filterMyPolls() {
+  const q = (document.getElementById('mypolls-search')?.value || '').toLowerCase();
+  if (!q) { renderMyPolls(allMyPolls); return; }
+  const filtered = allMyPolls.filter(p => p.tit.toLowerCase().includes(q));
+  renderMyPolls(filtered);
+}
+
+function showEmbedModal(slug) {
+  const embedCode = `<script src="${window.location.origin}/embed.js" data-poll="${slug}"><\/script>`;
+  const bodyHtml = `
+    <p style="color:var(--gray);font-size:13px;margin-bottom:12px">Copy and paste this code into your website's HTML:</p>
+    <div style="background:var(--surface);padding:14px;border-radius:var(--radius);font-family:monospace;font-size:12px;word-break:break-all;color:var(--text)">${esc(embedCode)}</div>
+  `;
+  const footerHtml = `
+    <button class="btn" onclick="closeModal()">Close</button>
+    <button class="btn btn-primary" onclick="copyToClipboard('${esc(embedCode.replace(/'/g, "\\'"))}');closeModal()">Copy code</button>
+  `;
+  openModal('Embed code', bodyHtml, footerHtml);
+}
+
+async function closePoll(id) {
+  if (!confirm('Close this poll? Votes will be tallied and final results saved.')) return;
+  const { ok } = await api('POST', `/polls/${id}/close`);
+  if (ok) { showToast('Poll closed', 'success'); loadMyPolls(); }
+  else showToast('Failed to close poll', 'error');
+}
+
+async function deletePoll(id) {
+  if (!confirm('Delete this poll permanently? This cannot be undone.')) return;
+  const { ok } = await api('DELETE', `/polls/${id}`);
+  if (ok) { showToast('Poll deleted', 'success'); loadMyPolls(); }
+  else showToast('Failed to delete poll', 'error');
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function loadSettings() {
+  document.getElementById('settings-name').value = user.name || '';
+  document.getElementById('settings-email').value = user.email || '';
+  const plan = (user.plan || 'free');
+  const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+  document.getElementById('settings-plan-detail').textContent = `You are on the ${planName} plan.`;
+}
+
+async function saveSettings() {
+  const alertEl = document.getElementById('settings-alert');
+  alertEl.className = 'alert';
+  const name = document.getElementById('settings-name').value.trim();
+  const password = document.getElementById('settings-password').value;
+
+  if (!name) { alertEl.className = 'alert alert-error'; alertEl.textContent = 'Name is required'; return; }
+
+  user.name = name;
+  localStorage.setItem('pollup_user', JSON.stringify(user));
+  document.getElementById('sidebar-user-name').textContent = name;
+  showToast('Settings saved', 'success');
+  
+  if (password && password.length >= 6) {
+    // In production, add password change endpoint
+    showToast('Password change not implemented in demo', 'info');
+  }
+}
+
+// ============================================================
+// UPGRADE MODAL
+// ============================================================
+function showUpgradeModal() {
+  const plans = {
+    free: { next: 'pro', price: '$5/month', features: '50 active polls, 5K votes/poll, custom colors, remove branding' },
+    pro: { next: 'max', price: '$12/month', features: 'Unlimited polls, unlimited votes, CSV export, API access, priority support' },
+    max: { next: null, price: null, features: 'You have everything!' }
+  };
+  const current = user.plan || 'free';
+  const plan = plans[current];
+
+  if (!plan.next) {
+    showToast('You are already on the Max plan', 'info');
+    return;
+  }
+
+  const bodyHtml = `
+    <p style="color:var(--gray);margin-bottom:16px">Upgrade from <strong>${current.charAt(0).toUpperCase() + current.slice(1)}</strong> to <strong>${plan.next.charAt(0).toUpperCase() + plan.next.slice(1)}</strong></p>
+    <p style="font-size:24px;font-weight:500;font-family:'Google Sans',sans-serif;margin-bottom:8px">${plan.price}</p>
+    <p style="color:var(--gray);font-size:14px;margin-bottom:16px">${plan.features}</p>
+    <p style="font-size:12px;color:var(--gray2)">This is a demo. In production, real payment will be processed.</p>
+  `;
+  const footerHtml = `
+    <button class="btn" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="activateUpgrade('${plan.next}')">Upgrade now</button>
+  `;
+  openModal('Upgrade Plan', bodyHtml, footerHtml);
+}
+
+async function activateUpgrade(plan) {
+  user.plan = plan;
+  localStorage.setItem('pollup_user', JSON.stringify(user));
+  closeModal();
+  showToast(`Upgraded to ${plan.charAt(0).toUpperCase() + plan.slice(1)}`, 'success');
+  setTimeout(() => location.reload(), 1000);
+}
+
+// ============================================================
+// STARTUP
+// ============================================================
+init();
+</script>
+</body>
+</html>
