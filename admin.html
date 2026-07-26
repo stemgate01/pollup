@@ -228,13 +228,13 @@ tr:hover td{background:#fafafa}
 
 <script>
 // ============================================================
-// AUTH CHECK — Admin must have key in sessionStorage
+// AUTH CHECK
 // ============================================================
-const adminKey = sessionStorage.getItem('pollup_admin_key');
+var adminKey = sessionStorage.getItem('pollup_admin_key');
 if (!adminKey) { window.location.href = '/admin-login.html'; }
 
-const API = '/api';
-const ADMIN_HEADERS = {
+var API = '/api';
+var ADMIN_HEADERS = {
   'Content-Type': 'application/json',
   'X-Admin-Key': adminKey
 };
@@ -243,25 +243,25 @@ const ADMIN_HEADERS = {
 // HELPERS
 // ============================================================
 function esc(s) {
-  const d = document.createElement('div');
+  var d = document.createElement('div');
   d.textContent = String(s || '');
   return d.innerHTML;
 }
 
-function showToast(msg, type = 'success') {
-  const t = document.getElementById('toast');
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = `toast toast-${type} show`;
-  setTimeout(() => t.classList.remove('show'), 3500);
+  t.className = 'toast toast-' + type + ' show';
+  setTimeout(function() { t.classList.remove('show'); }, 3500);
 }
 
 async function adminApi(method, path, body) {
   try {
-    const opts = { method, headers: ADMIN_HEADERS };
+    var opts = { method: method, headers: ADMIN_HEADERS };
     if (body) opts.body = JSON.stringify(body);
-    const res = await fetch(API + path, opts);
-    const data = await res.json();
-    return { ok: res.ok, data, status: res.status };
+    var res = await fetch(API + path, opts);
+    var data = await res.json();
+    return { ok: res.ok, data: data, status: res.status };
   } catch(e) {
     return { ok: false, data: { error: 'Network error' }, status: 0 };
   }
@@ -273,8 +273,14 @@ function openModal(title, bodyHtml, footerHtml) {
   document.getElementById('gModal-footer').innerHTML = footerHtml;
   document.getElementById('gModal').classList.add('active');
 }
-function closeModal() { document.getElementById('gModal').classList.remove('active'); }
-document.getElementById('gModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+function closeModal() {
+  document.getElementById('gModal').classList.remove('active');
+}
+
+document.getElementById('gModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
 
 function signOut() {
   sessionStorage.removeItem('pollup_admin_key');
@@ -286,12 +292,13 @@ function signOut() {
 // VIEW SWITCHING
 // ============================================================
 function showAdminView(view) {
-  document.querySelectorAll('.admin-subview').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.admin-subview').forEach(function(v) { v.classList.remove('active'); });
   document.getElementById('admin-' + view).classList.add('active');
-  document.querySelectorAll('.sidebar-nav button').forEach(b => b.classList.remove('active'));
-  document.querySelector(`[data-view="${view}"]`).classList.add('active');
+  document.querySelectorAll('.sidebar-nav button').forEach(function(b) { b.classList.remove('active'); });
+  var navBtn = document.querySelector('[data-view="' + view + '"]');
+  if (navBtn) navBtn.classList.add('active');
   document.getElementById('sidebar').classList.remove('open');
-  const titles = { dashboard:'Dashboard', users:'Users', polls:'All Polls', reports:'Reports', storage:'Storage' };
+  var titles = { dashboard:'Dashboard', users:'Users', polls:'All Polls', reports:'Reports', storage:'Storage' };
   document.getElementById('view-title').textContent = titles[view] || view;
   if (view === 'dashboard') loadDashboard();
   if (view === 'users') loadUsers();
@@ -304,51 +311,49 @@ function showAdminView(view) {
 // DASHBOARD + POLLING TOGGLE
 // ============================================================
 async function loadDashboard() {
-  const { ok, data } = await adminApi('GET', '/admin/stats');
-  if (!ok) { showToast('Failed to load stats', 'error'); return; }
+  var result = await adminApi('GET', '/admin/stats');
+  if (!result.ok) { showToast('Failed to load stats', 'error'); return; }
+  var data = result.data;
 
-  document.getElementById('admin-stats').innerHTML = `
-    <div class="stat-card"><div class="stat-value">${data.users||0}</div><div class="stat-label">Total users</div></div>
-    <div class="stat-card"><div class="stat-value">${data.activePolls||0}</div><div class="stat-label">Active polls</div></div>
-    <div class="stat-card"><div class="stat-value">${data.reportedPolls||0}</div><div class="stat-label">Reported polls</div></div>
-    <div class="stat-card"><div class="stat-value">${data.freeUsers||0} / ${data.proUsers||0} / ${data.maxUsers||0}</div><div class="stat-label">Free / Pro / Max</div></div>
-  `;
+  document.getElementById('admin-stats').innerHTML = 
+    '<div class="stat-card"><div class="stat-value">' + (data.users||0) + '</div><div class="stat-label">Total users</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + (data.activePolls||0) + '</div><div class="stat-label">Active polls</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + (data.reportedPolls||0) + '</div><div class="stat-label">Reported polls</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + (data.freeUsers||0) + ' / ' + (data.proUsers||0) + ' / ' + (data.maxUsers||0) + '</div><div class="stat-label">Free / Pro / Max</div></div>';
 
   renderPollingControl(data.pollingEnabled);
   updatePollingBadge(data.pollingEnabled);
 }
 
 function renderPollingControl(enabled) {
-  const card = document.getElementById('polling-control-card');
-  card.innerHTML = `
-    <div class="polling-status-card ${enabled ? 'enabled' : 'disabled'}">
-      <div class="polling-indicator">
-        <div class="polling-dot ${enabled ? 'on' : 'off'}"></div>
-        <span>Polling is <strong>${enabled ? 'ENABLED' : 'DISABLED'}</strong></span>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn ${enabled ? 'btn-warning' : 'btn-success'}" onclick="togglePolling()">
-          ${enabled ? 'Stop All Polling' : 'Enable Polling'}
-        </button>
-      </div>
-    </div>
-    <p style="font-size:12px;color:#5f6368;margin-top:4px">
-      ${enabled ? 'Users can create polls and vote.' : 'Poll creation and voting are paused site-wide. Existing results remain visible.'}
-    </p>
-  `;
+  var card = document.getElementById('polling-control-card');
+  card.innerHTML = 
+    '<div class="polling-status-card ' + (enabled ? 'enabled' : 'disabled') + '">' +
+      '<div class="polling-indicator">' +
+        '<div class="polling-dot ' + (enabled ? 'on' : 'off') + '"></div>' +
+        '<span>Polling is <strong>' + (enabled ? 'ENABLED' : 'DISABLED') + '</strong></span>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px">' +
+        '<button class="btn ' + (enabled ? 'btn-warning' : 'btn-success') + '" onclick="togglePolling()">' +
+          (enabled ? 'Stop All Polling' : 'Enable Polling') +
+        '</button>' +
+      '</div>' +
+    '</div>' +
+    '<p style="font-size:12px;color:#5f6368;margin-top:4px">' +
+      (enabled ? 'Users can create polls and vote.' : 'Poll creation and voting are paused site-wide. Existing results remain visible.') +
+    '</p>';
 }
 
 function updatePollingBadge(enabled) {
-  document.getElementById('polling-status-badge').innerHTML = `
-    <span class="badge ${enabled ? 'badge-on' : 'badge-off'}">${enabled ? 'Polling ON' : 'Polling OFF'}</span>
-  `;
+  document.getElementById('polling-status-badge').innerHTML = 
+    '<span class="badge ' + (enabled ? 'badge-on' : 'badge-off') + '">' + (enabled ? 'Polling ON' : 'Polling OFF') + '</span>';
 }
 
 async function togglePolling() {
   if (!confirm('Toggle polling status for the entire site?')) return;
-  const { ok, data } = await adminApi('POST', '/admin/toggle-polling');
-  if (ok) {
-    showToast(data.pollingEnabled ? 'Polling enabled' : 'Polling stopped', 'success');
+  var result = await adminApi('POST', '/admin/toggle-polling');
+  if (result.ok) {
+    showToast(result.data.pollingEnabled ? 'Polling enabled' : 'Polling stopped', 'success');
     loadDashboard();
   } else {
     showToast('Failed to toggle', 'error');
@@ -359,51 +364,60 @@ async function togglePolling() {
 // USERS
 // ============================================================
 async function loadUsers() {
-  const q = document.getElementById('user-search')?.value || '';
-  const plan = document.getElementById('user-plan-filter')?.value || 'all';
-  const container = document.getElementById('users-list');
+  var q = document.getElementById('user-search')?.value || '';
+  var plan = document.getElementById('user-plan-filter')?.value || 'all';
+  var container = document.getElementById('users-list');
   container.innerHTML = '<div class="spinner"></div>';
 
-  const { ok, data } = await adminApi('GET', `/admin/users?q=${encodeURIComponent(q)}&plan=${plan}`);
-  if (!ok) { container.innerHTML = '<p style="color:#d93025">Failed to load</p>'; return; }
+  var result = await adminApi('GET', '/admin/users?q=' + encodeURIComponent(q) + '&plan=' + plan);
+  if (!result.ok) { container.innerHTML = '<p style="color:#d93025">Failed to load</p>'; return; }
 
-  const users = data.users || [];
-  if (!users.length) { container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><h4>No users found</h4></div>'; return; }
+  var users = result.data.users || [];
+  if (!users.length) {
+    container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><h4>No users found</h4></div>';
+    return;
+  }
 
-  container.innerHTML = `<table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Plan</th><th>Status</th><th>Actions</th></tr></thead><tbody>
-    ${users.map(u => `
-      <tr>
-        <td style="font-family:monospace;font-size:12px">${esc(u.userno)}</td>
-        <td>${esc(u.nam)}</td><td>${esc(u.eml)}</td>
-        <td><span class="badge badge-${u.pln}">${u.pln}</span></td>
-        <td>${u.sts===1?'<span class="badge badge-active">Active</span>':'<span class="badge badge-blocked">Blocked</span>'}</td>
-        <td style="display:flex;gap:4px;flex-wrap:wrap">
-          ${u.sts===1?`<button class="btn btn-sm btn-danger" onclick="blockUser('${u.id}')">Block</button>`:`<button class="btn btn-sm btn-success" onclick="unblockUser('${u.id}')">Unblock</button>`}
-          <button class="btn btn-sm" onclick="showGrantModal('${u.id}','${esc(u.userno)}','${u.pln}')">Grant</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')">Delete</button>
-        </td>
-      </tr>`).join('')}
-  </tbody></table>`;
+  container.innerHTML = '<table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Plan</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+    users.map(function(u) {
+      return '<tr>' +
+        '<td style="font-family:monospace;font-size:12px">' + esc(u.userno) + '</td>' +
+        '<td>' + esc(u.nam) + '</td><td>' + esc(u.eml) + '</td>' +
+        '<td><span class="badge badge-' + u.pln + '">' + u.pln + '</span></td>' +
+        '<td>' + (u.sts===1?'<span class="badge badge-active">Active</span>':'<span class="badge badge-blocked">Blocked</span>') + '</td>' +
+        '<td style="display:flex;gap:4px;flex-wrap:wrap">' +
+          (u.sts===1?'<button class="btn btn-sm btn-danger" onclick="blockUser(\'' + u.id + '\')">Block</button>':'<button class="btn btn-sm btn-success" onclick="unblockUser(\'' + u.id + '\')">Unblock</button>') +
+          '<button class="btn btn-sm" onclick="showGrantModal(\'' + u.id + '\',\'' + esc(u.userno) + '\',\'' + u.pln + '\')">Grant</button>' +
+          '<button class="btn btn-sm btn-danger" onclick="deleteUser(\'' + u.id + '\')">Delete</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('') +
+  '</tbody></table>';
 }
 
-async function blockUser(id) { if(!confirm('Block?'))return; await adminApi('POST',`/admin/user/${id}/block`); showToast('Blocked','success'); loadUsers(); }
-async function unblockUser(id) { await adminApi('POST',`/admin/user/${id}/unblock`); showToast('Unblocked','success'); loadUsers(); }
-async function deleteUser(id) { if(!confirm('Delete user + all polls?'))return; await adminApi('DELETE',`/admin/user/${id}`); showToast('Deleted','success'); loadUsers(); }
+async function blockUser(id) { if(!confirm('Block this user?'))return; await adminApi('POST','/admin/user/'+id+'/block'); showToast('Blocked','success'); loadUsers(); }
+async function unblockUser(id) { await adminApi('POST','/admin/user/'+id+'/unblock'); showToast('Unblocked','success'); loadUsers(); }
+
+async function deleteUser(id) {
+  if(!confirm('Delete this user and ALL their polls? This cannot be undone.'))return;
+  await adminApi('DELETE','/admin/user/'+id);
+  showToast('Deleted','success'); loadUsers();
+}
 
 function showGrantModal(id, userno, currentPlan) {
   openModal('Grant Plan',
-    `<p style="color:#5f6368;margin-bottom:12px">User <strong>#${userno}</strong></p>
-     <div class="form-group"><label>Plan</label><select id="grant-plan"><option value="free">Free</option><option value="pro">Pro</option><option value="max">Max</option></select></div>
-     <div class="form-group"><label>Days (0=permanent)</label><input type="number" id="grant-days" value="30" min="0"></div>`,
-    `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="doGrant('${id}')">Grant</button>`
+    '<p style="color:#5f6368;margin-bottom:12px">User <strong>#' + userno + '</strong></p>' +
+    '<div class="form-group"><label>Plan</label><select id="grant-plan"><option value="free">Free</option><option value="pro">Pro</option><option value="max">Max</option></select></div>' +
+    '<div class="form-group"><label>Days (0 = permanent)</label><input type="number" id="grant-days" value="30" min="0"></div>',
+    '<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="doGrant(\'' + id + '\')">Grant</button>'
   );
   document.getElementById('grant-plan').value = currentPlan;
 }
 
 async function doGrant(id) {
-  const plan = document.getElementById('grant-plan').value;
-  const days = parseInt(document.getElementById('grant-days').value)||0;
-  await adminApi('POST',`/admin/user/${id}/grant`,{plan,days});
+  var plan = document.getElementById('grant-plan').value;
+  var days = parseInt(document.getElementById('grant-days').value) || 0;
+  await adminApi('POST','/admin/user/'+id+'/grant',{plan:plan,days:days});
   closeModal(); showToast('Plan updated','success'); loadUsers();
 }
 
@@ -411,52 +425,68 @@ async function doGrant(id) {
 // POLLS
 // ============================================================
 async function loadPolls() {
-  const q = document.getElementById('poll-search')?.value || '';
-  const sts = document.getElementById('poll-status-filter')?.value || 'all';
-  const container = document.getElementById('polls-list');
+  var q = document.getElementById('poll-search')?.value || '';
+  var sts = document.getElementById('poll-status-filter')?.value || 'all';
+  var container = document.getElementById('polls-list');
   container.innerHTML = '<div class="spinner"></div>';
 
-  const { ok, data } = await adminApi('GET', `/admin/polls?q=${encodeURIComponent(q)}&status=${sts}`);
-  if (!ok) { container.innerHTML = '<p style="color:#d93025">Failed</p>'; return; }
+  var result = await adminApi('GET', '/admin/polls?q=' + encodeURIComponent(q) + '&status=' + sts);
+  if (!result.ok) { container.innerHTML = '<p style="color:#d93025">Failed</p>'; return; }
 
-  const polls = data.polls || [];
-  if (!polls.length) { container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8"/></svg><h4>No polls found</h4></div>'; return; }
+  var polls = result.data.polls || [];
+  if (!polls.length) {
+    container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8"/></svg><h4>No polls found</h4></div>';
+    return;
+  }
 
-  container.innerHTML = `<table><thead><tr><th>Title</th><th>Owner</th><th>Status</th><th>Flags</th><th>Actions</th></tr></thead><tbody>
-    ${polls.map(p => {
-      const sb = p.sts===1?'<span class="badge badge-active">Active</span>':p.sts===2?'<span class="badge badge-ended">Ended</span>':'<span class="badge badge-blocked">Blocked</span>';
-      const rc = p.reportCount||0;
-      return `<tr><td>${esc(p.tit)}</td><td style="font-family:monospace;font-size:11px">#${esc(p.userno)}</td><td>${sb}</td><td>${rc>0?`<span style="color:#d93025;font-weight:500">${rc} report${rc>1?'s':''}</span>`:'—'}</td>
-        <td style="display:flex;gap:4px;flex-wrap:wrap">
-          ${p.sts!==0?`<button class="btn btn-sm btn-danger" onclick="adminBlockPoll('${p.id}')">Block</button>`:`<button class="btn btn-sm btn-success" onclick="adminUnblockPoll('${p.id}')">Unblock</button>`}
-          <button class="btn btn-sm btn-danger" onclick="adminDeletePoll('${p.id}')">Delete</button>
-        </td></tr>`;
-    }).join('')}
-  </tbody></table>`;
+  container.innerHTML = '<table><thead><tr><th>Title</th><th>Owner</th><th>Status</th><th>Flags</th><th>Actions</th></tr></thead><tbody>' +
+    polls.map(function(p) {
+      var sb = p.sts===1?'<span class="badge badge-active">Active</span>':p.sts===2?'<span class="badge badge-ended">Ended</span>':'<span class="badge badge-blocked">Blocked</span>';
+      var rc = p.reportCount||0;
+      return '<tr><td>' + esc(p.tit) + '</td><td style="font-family:monospace;font-size:11px">#' + esc(p.userno) + '</td><td>' + sb + '</td>' +
+        '<td>' + (rc>0?'<span style="color:#d93025;font-weight:500">' + rc + ' report' + (rc>1?'s':'') + '</span>':'—') + '</td>' +
+        '<td style="display:flex;gap:4px;flex-wrap:wrap">' +
+          '<button class="btn btn-sm" onclick="window.open(\'/poll.html?p=' + p.slg + '\',\'_blank\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> View</button>' +
+          (p.sts!==0?'<button class="btn btn-sm btn-danger" onclick="adminBlockPoll(\'' + p.id + '\')">Block</button>':'<button class="btn btn-sm btn-success" onclick="adminUnblockPoll(\'' + p.id + '\')">Unblock</button>') +
+          '<button class="btn btn-sm btn-danger" onclick="adminDeletePoll(\'' + p.id + '\')">Delete</button>' +
+        '</td></tr>';
+    }).join('') +
+  '</tbody></table>';
 }
 
-async function adminBlockPoll(id) { await adminApi('POST',`/admin/poll/${id}/block`); showToast('Blocked','success'); loadPolls(); }
-async function adminUnblockPoll(id) { await adminApi('POST',`/admin/poll/${id}/unblock`); showToast('Unblocked','success'); loadPolls(); }
-async function adminDeletePoll(id) { if(!confirm('Delete?'))return; await adminApi('DELETE',`/admin/poll/${id}`); showToast('Deleted','success'); loadPolls(); }
+async function adminBlockPoll(id) { await adminApi('POST','/admin/poll/'+id+'/block'); showToast('Blocked','success'); loadPolls(); }
+async function adminUnblockPoll(id) { await adminApi('POST','/admin/poll/'+id+'/unblock'); showToast('Unblocked','success'); loadPolls(); }
+
+async function adminDeletePoll(id) {
+  if(!confirm('Delete this poll?'))return;
+  await adminApi('DELETE','/admin/poll/'+id);
+  showToast('Deleted','success'); loadPolls();
+}
 
 // ============================================================
 // REPORTS
 // ============================================================
 async function loadReports() {
-  const container = document.getElementById('reports-list');
+  var container = document.getElementById('reports-list');
   container.innerHTML = '<div class="spinner"></div>';
-  const { ok, data } = await adminApi('GET', '/admin/polls?q=&status=all');
-  if (!ok) { container.innerHTML = '<p style="color:#d93025">Failed</p>'; return; }
-  const reported = (data.polls||[]).filter(p => (p.reportCount||0) > 0);
-  if (!reported.length) { container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><polyline points="8 14 12 10 16 14"/></svg><h4>No reports</h4><p>All clear</p></div>'; return; }
-  container.innerHTML = `<table><thead><tr><th>Poll</th><th>Owner</th><th>Reports</th><th>Reasons</th><th>Actions</th></tr></thead><tbody>
-    ${reported.map(p => `<tr><td>${esc(p.tit)}</td><td>#${esc(p.userno)}</td><td><strong style="color:#d93025">${p.reportCount}</strong></td><td style="font-size:11px">${esc((p.rpt||[]).map(r=>r.reason).join(', '))}</td>
-      <td style="display:flex;gap:4px"><button class="btn btn-sm btn-danger" onclick="adminBlockPoll('${p.id}')">Block</button><button class="btn btn-sm" onclick="clearReports('${p.id}')">Clear</button></td></tr>`).join('')}
-  </tbody></table>`;
+  var result = await adminApi('GET', '/admin/polls?q=&status=all');
+  if (!result.ok) { container.innerHTML = '<p style="color:#d93025">Failed</p>'; return; }
+  var reported = (result.data.polls||[]).filter(function(p) { return (p.reportCount||0) > 0; });
+  if (!reported.length) {
+    container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><polyline points="8 14 12 10 16 14"/></svg><h4>No reports</h4><p>All clear</p></div>';
+    return;
+  }
+  container.innerHTML = '<table><thead><tr><th>Poll</th><th>Owner</th><th>Reports</th><th>Reasons</th><th>Actions</th></tr></thead><tbody>' +
+    reported.map(function(p) {
+      var reasons = (p.rpt||[]).map(function(r){return r.reason;}).join(', ');
+      return '<tr><td>' + esc(p.tit) + '</td><td>#' + esc(p.userno) + '</td><td><strong style="color:#d93025">' + p.reportCount + '</strong></td><td style="font-size:11px">' + esc(reasons) + '</td>' +
+        '<td style="display:flex;gap:4px"><button class="btn btn-sm btn-danger" onclick="adminBlockPoll(\'' + p.id + '\')">Block</button><button class="btn btn-sm" onclick="clearReports(\'' + p.id + '\')">Clear</button></td></tr>';
+    }).join('') +
+  '</tbody></table>';
 }
 
 async function clearReports(id) {
-  await adminApi('POST', `/admin/poll/${id}/unblock`);
+  await adminApi('POST', '/admin/poll/' + id + '/unblock');
   showToast('Reports cleared','success'); loadReports();
 }
 
@@ -464,28 +494,30 @@ async function clearReports(id) {
 // STORAGE
 // ============================================================
 async function loadStorage() {
-  const container = document.getElementById('storage-content');
+  var container = document.getElementById('storage-content');
   container.innerHTML = '<div class="spinner"></div>';
-  const { ok, data } = await adminApi('GET', '/admin/storage');
-  if (!ok) { container.innerHTML = '<p style="color:#d93025">Failed</p>'; return; }
-  container.innerHTML = `
-    <div class="card"><h3>Storage Usage</h3>
-      <p style="font-size:28px;font-family:'Google Sans',sans-serif">${data.totalSize} <span style="font-size:14px;color:#5f6368">of 5 GB</span></p>
-      <div class="storage-bar"><div class="storage-bar-fill" style="width:${Math.min(data.percentUsed,100)}%"></div></div>
-      <p style="font-size:12px;color:#5f6368">${data.percentUsed}% used</p>
-    </div>
-    <div class="card"><h3>Table Breakdown</h3>
-      <table><thead><tr><th>Table</th><th>Rows</th><th>Est. Size</th></tr></thead>
-        <tbody>${(data.stats||[]).map(s=>`<tr><td>${s.table}</td><td>${s.rows}</td><td>${s.estimatedSize}</td></tr>`).join('')}</tbody></table>
-    </div>
-    <p style="color:#5f6368;font-size:12px">Ended polls awaiting cleanup: ${data.endedPolls||0}</p>
-    <button class="btn btn-danger btn-sm" onclick="forceCleanup()">Force cleanup now</button>`;
+  var result = await adminApi('GET', '/admin/storage');
+  if (!result.ok) { container.innerHTML = '<p style="color:#d93025">Failed</p>'; return; }
+  var data = result.data;
+  container.innerHTML = 
+    '<div class="card"><h3>Storage Usage</h3>' +
+      '<p style="font-size:28px;font-family:\'Google Sans\',sans-serif">' + data.totalSize + ' <span style="font-size:14px;color:#5f6368">of 5 GB</span></p>' +
+      '<div class="storage-bar"><div class="storage-bar-fill" style="width:' + Math.min(data.percentUsed,100) + '%"></div></div>' +
+      '<p style="font-size:12px;color:#5f6368">' + data.percentUsed + '% used</p>' +
+    '</div>' +
+    '<div class="card"><h3>Table Breakdown</h3>' +
+      '<table><thead><tr><th>Table</th><th>Rows</th><th>Est. Size</th></tr></thead><tbody>' +
+        (data.stats||[]).map(function(s){return '<tr><td>' + s.table + '</td><td>' + s.rows + '</td><td>' + s.estimatedSize + '</td></tr>';}).join('') +
+      '</tbody></table>' +
+    '</div>' +
+    '<p style="color:#5f6368;font-size:12px">Ended polls awaiting cleanup: ' + (data.endedPolls||0) + '</p>' +
+    '<button class="btn btn-danger btn-sm" onclick="forceCleanup()">Force cleanup now</button>';
 }
 
 async function forceCleanup() {
-  if(!confirm('Delete polls ended >7 days ago?'))return;
-  const { ok, data } = await adminApi('POST','/admin/cleanup');
-  if(ok) showToast(`Deleted ${data.deleted||0} polls`,'success'), loadStorage();
+  if(!confirm('Delete polls ended more than 7 days ago?'))return;
+  var result = await adminApi('POST','/admin/cleanup');
+  if(result.ok) { showToast('Deleted ' + (result.data.deleted||0) + ' old polls','success'); loadStorage(); }
   else showToast('Failed','error');
 }
 
