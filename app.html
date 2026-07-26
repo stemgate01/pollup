@@ -231,7 +231,7 @@ textarea{resize:vertical;min-height:60px}
 .modal{
   background:var(--white);
   border-radius:var(--radius-lg);
-  padding:32px;width:90%;max-width:480px;
+  padding:32px;width:90%;max-width:520px;
   box-shadow:0 8px 32px rgba(0,0,0,0.12);
   max-height:90vh;overflow-y:auto;
 }
@@ -283,33 +283,20 @@ textarea{resize:vertical;min-height:60px}
   display:inline-block;padding:2px 8px;border-radius:10px;
   font-size:11px;font-weight:500;
 }
-.badge-free{background:var(--surface2);color:var(--gray)}
-.badge-pro{background:var(--green-dim);color:var(--green)}
-.badge-max{background:var(--orange-dim);color:var(--orange)}
 .badge-active{background:var(--green-dim);color:var(--green)}
 .badge-ended{background:var(--surface2);color:var(--gray)}
 .badge-blocked{background:var(--red-dim);color:var(--red)}
 
 /* Share section */
-.share-section{
+.share-box{
   background:var(--surface);
   border-radius:var(--radius);
-  padding:16px;margin-top:16px;
+  padding:16px;margin-bottom:12px;
 }
-.share-link-box{
-  display:flex;align-items:center;gap:8px;
-  padding:10px 14px;background:var(--white);
-  border:1px solid var(--border2);border-radius:var(--radius);
-  font-family:monospace;font-size:13px;
-  word-break:break-all;
+.share-box label{
+  font-size:12px;font-weight:500;color:var(--gray);
+  display:block;margin-bottom:8px;
 }
-.copy-btn{
-  padding:6px 12px;border-radius:16px;
-  font-size:12px;cursor:pointer;border:none;
-  background:var(--accent);color:#fff;font-weight:500;
-  white-space:nowrap;
-}
-.copy-btn:hover{background:var(--accent2)}
 
 /* Search */
 .search-box{
@@ -492,37 +479,37 @@ textarea{resize:vertical;min-height:60px}
 // ============================================================
 // AUTH CHECK
 // ============================================================
-const token = localStorage.getItem('pollup_token');
-const user = JSON.parse(localStorage.getItem('pollup_user') || 'null');
+var token = localStorage.getItem('pollup_token');
+var user = JSON.parse(localStorage.getItem('pollup_user') || 'null');
 if (!token || !user) { window.location.href = '/index.html'; }
 
-const API = '/api';
-let currentView = 'dashboard';
-let allMyPolls = [];
+var API = '/api';
+var currentView = 'dashboard';
+var allMyPolls = [];
 
 // ============================================================
 // HELPERS
 // ============================================================
 function esc(s) {
-  const d = document.createElement('div');
+  var d = document.createElement('div');
   d.textContent = String(s || '');
   return d.innerHTML;
 }
 
-function showToast(msg, type = 'success') {
-  const t = document.getElementById('toast');
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = `toast toast-${type} show`;
-  setTimeout(() => t.classList.remove('show'), 3500);
+  t.className = 'toast toast-' + type + ' show';
+  setTimeout(function() { t.classList.remove('show'); }, 3500);
 }
 
 async function api(method, path, body) {
   try {
-    const opts = { method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }};
+    var opts = { method: method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }};
     if (body) opts.body = JSON.stringify(body);
-    const res = await fetch(API + path, opts);
-    const data = await res.json();
-    return { ok: res.ok, data, status: res.status };
+    var res = await fetch(API + path, opts);
+    var data = await res.json();
+    return { ok: res.ok, data: data, status: res.status };
   } catch(e) {
     return { ok: false, data: { error: 'Network error. Please try again.' }, status: 0 };
   }
@@ -553,25 +540,39 @@ function signOut() {
   window.location.href = '/index.html';
 }
 
+function copyInput(elementId) {
+  var el = document.getElementById(elementId);
+  if (!el) return;
+  el.select();
+  el.setSelectionRange(0, 99999);
+  try {
+    navigator.clipboard.writeText(el.value).then(function() {
+      showToast('Copied to clipboard', 'success');
+    }).catch(function() {
+      showToast('Copied to clipboard', 'success');
+    });
+  } catch(e) {
+    showToast('Copied to clipboard', 'success');
+  }
+}
+
 // ============================================================
 // VIEW SWITCHING
 // ============================================================
 function showView(view) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  const target = document.getElementById('view-' + view);
+  document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+  var target = document.getElementById('view-' + view);
   if (target) target.classList.add('active');
 
-  document.querySelectorAll('#sidebar-nav button').forEach(b => b.classList.remove('active'));
-  const navBtn = document.querySelector(`[data-view="${view}"]`);
+  document.querySelectorAll('#sidebar-nav button').forEach(function(b) { b.classList.remove('active'); });
+  var navBtn = document.querySelector('[data-view="' + view + '"]');
   if (navBtn) navBtn.classList.add('active');
 
   currentView = view;
-  const titles = {
-    dashboard: 'Dashboard', create: 'New Poll', mypolls: 'My Polls',
-    settings: 'Settings'
+  var titles = {
+    dashboard: 'Dashboard', create: 'New Poll', mypolls: 'My Polls', settings: 'Settings'
   };
   document.getElementById('view-title').textContent = titles[view] || view;
-
   document.getElementById('sidebar').classList.remove('open');
 
   if (view === 'dashboard') loadDashboard();
@@ -585,12 +586,15 @@ function showView(view) {
 function init() {
   document.getElementById('sidebar-user-name').textContent = user.name;
   document.getElementById('sidebar-user-email').textContent = user.email;
-  const planEl = document.getElementById('sidebar-user-plan');
-  const planName = (user.plan || 'free').charAt(0).toUpperCase() + (user.plan || 'free').slice(1);
+  var planEl = document.getElementById('sidebar-user-plan');
+  var planName = (user.plan || 'free').charAt(0).toUpperCase() + (user.plan || 'free').slice(1);
   planEl.textContent = planName;
   planEl.className = 'user-plan ' + (user.plan || 'free');
 
-  document.getElementById('btn-upgrade').textContent = user.plan === 'free' ? 'Upgrade to Pro' : (user.plan === 'pro' ? 'Upgrade to Max' : 'You are on Max');
+  var upgradeBtn = document.getElementById('btn-upgrade');
+  if (user.plan === 'free') upgradeBtn.textContent = 'Upgrade to Pro';
+  else if (user.plan === 'pro') upgradeBtn.textContent = 'Upgrade to Max';
+  else { upgradeBtn.textContent = 'You are on Max'; upgradeBtn.style.opacity = '0.6'; }
 
   loadDashboard();
 }
@@ -599,11 +603,11 @@ function init() {
 // DASHBOARD
 // ============================================================
 async function loadDashboard() {
-  const { ok, data } = await api('GET', '/polls');
-  if (ok) {
-    const polls = data.polls || [];
+  var result = await api('GET', '/polls');
+  if (result.ok) {
+    var polls = result.data.polls || [];
     allMyPolls = polls;
-    const activePolls = polls.filter(p => p.sts === 1);
+    var activePolls = polls.filter(function(p) { return p.sts === 1; });
     document.getElementById('stat-polls').textContent = activePolls.length;
     document.getElementById('stat-total-polls').textContent = polls.length;
     document.getElementById('stat-plan').textContent = (user.plan || 'free').charAt(0).toUpperCase() + (user.plan || 'free').slice(1);
@@ -613,40 +617,48 @@ async function loadDashboard() {
 // ============================================================
 // CREATE POLL
 // ============================================================
-let optionCount = 2;
+var optionCount = 2;
 
 function addOption() {
   optionCount++;
-  const container = document.getElementById('options-container');
-  const div = document.createElement('div');
+  var container = document.getElementById('options-container');
+  var div = document.createElement('div');
   div.style.cssText = 'display:flex;gap:8px;margin-bottom:6px';
-  div.innerHTML = `<input type="text" class="poll-option" placeholder="Option ${optionCount}" required><button type="button" class="btn btn-sm btn-danger remove-option" onclick="removeOption(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+  div.innerHTML = '<input type="text" class="poll-option" placeholder="Option ' + optionCount + '" required><button type="button" class="btn btn-sm btn-danger remove-option" onclick="removeOption(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
   container.appendChild(div);
   updateRemoveButtons();
 }
 
 function removeOption(btn) {
-  const container = document.getElementById('options-container');
+  var container = document.getElementById('options-container');
   if (container.children.length <= 2) return;
   btn.parentElement.remove();
   updateRemoveButtons();
 }
 
 function updateRemoveButtons() {
-  const container = document.getElementById('options-container');
-  const buttons = container.querySelectorAll('.remove-option');
-  buttons.forEach(b => b.style.display = container.children.length <= 2 ? 'none' : 'inline-flex');
+  var container = document.getElementById('options-container');
+  var buttons = container.querySelectorAll('.remove-option');
+  buttons.forEach(function(b) {
+    b.style.display = container.children.length <= 2 ? 'none' : 'inline-flex';
+  });
 }
 
 document.getElementById('create-poll-form').addEventListener('submit', async function(e) {
   e.preventDefault();
-  const alertEl = document.getElementById('create-alert');
+  var alertEl = document.getElementById('create-alert');
   alertEl.className = 'alert';
-  const btn = this.querySelector('button[type="submit"]');
+  var btn = this.querySelector('button[type="submit"]');
   btn.disabled = true;
-  btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:6px;"></span>Creating...';
+  btn.textContent = 'Creating...';
 
-  const options = Array.from(document.querySelectorAll('.poll-option')).map(i => i.value.trim()).filter(v => v);
+  var optionInputs = document.querySelectorAll('.poll-option');
+  var options = [];
+  optionInputs.forEach(function(i) {
+    var v = i.value.trim();
+    if (v) options.push(v);
+  });
+
   if (options.length < 2) {
     alertEl.className = 'alert alert-error';
     alertEl.textContent = 'At least 2 options required';
@@ -655,183 +667,186 @@ document.getElementById('create-poll-form').addEventListener('submit', async fun
     return;
   }
 
-  const body = {
+  var body = {
     title: document.getElementById('poll-title').value.trim(),
-    options,
+    options: options,
     multiple: document.getElementById('poll-multiple').checked,
     color: document.getElementById('poll-color').value,
     endsAt: document.getElementById('poll-ends').value ? new Date(document.getElementById('poll-ends').value).getTime() : null
   };
 
-  const { ok, data } = await api('POST', '/polls', body);
-  if (ok) {
+  var result = await api('POST', '/polls', body);
+  if (result.ok) {
     showToast('Poll created successfully', 'success');
     this.reset();
     optionCount = 2;
-    document.getElementById('options-container').innerHTML = `
-      <div style="display:flex;gap:8px;margin-bottom:6px"><input type="text" class="poll-option" placeholder="Option 1" required><button type="button" class="btn btn-sm btn-danger remove-option" style="display:none" onclick="removeOption(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-      <div style="display:flex;gap:8px;margin-bottom:6px"><input type="text" class="poll-option" placeholder="Option 2" required><button type="button" class="btn btn-sm btn-danger remove-option" style="display:none" onclick="removeOption(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-    `;
-    // Show share modal
-    showShareModal(data.poll);
+    document.getElementById('options-container').innerHTML = 
+      '<div style="display:flex;gap:8px;margin-bottom:6px"><input type="text" class="poll-option" placeholder="Option 1" required><button type="button" class="btn btn-sm btn-danger remove-option" style="display:none" onclick="removeOption(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>' +
+      '<div style="display:flex;gap:8px;margin-bottom:6px"><input type="text" class="poll-option" placeholder="Option 2" required><button type="button" class="btn btn-sm btn-danger remove-option" style="display:none" onclick="removeOption(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
+    showShareModal(result.data.poll);
   } else {
     alertEl.className = 'alert alert-error';
-    alertEl.textContent = data.error || 'Failed to create poll';
+    alertEl.textContent = result.data.error || 'Failed to create poll';
   }
   btn.disabled = false;
-  btn.innerHTML = 'Create poll';
+  btn.textContent = 'Create poll';
 });
 
 // ============================================================
 // SHARE MODAL
 // ============================================================
 function showShareModal(poll) {
-  const pollUrl = `${window.location.origin}/poll/${poll.slg}`;
-  const embedCode = `<script src="${window.location.origin}/embed.js" data-poll="${poll.slg}"><\/script>`;
+  var pollUrl = window.location.origin + '/poll.html?p=' + poll.slg;
+  var embedCode = '<script src="' + window.location.origin + '/embed.js" data-poll="' + poll.slg + '"><\/script>';
   
-  const bodyHtml = `
-    <div class="share-section">
-      <label style="font-size:12px;font-weight:500;color:var(--gray);display:block;margin-bottom:6px">Share link</label>
-      <div class="share-link-box">
-        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(pollUrl)}</span>
-        <button class="copy-btn" onclick="copyToClipboard('${esc(pollUrl)}')">Copy</button>
-      </div>
-    </div>
-    <div class="share-section">
-      <label style="font-size:12px;font-weight:500;color:var(--gray);display:block;margin-bottom:6px">Embed code</label>
-      <div class="share-link-box" style="flex-direction:column;align-items:stretch;gap:8px">
-        <code style="font-size:11px;word-break:break-all;color:var(--text)">${esc(embedCode)}</code>
-        <button class="copy-btn" onclick="copyToClipboard('${esc(embedCode.replace(/'/g, "\\'"))}')" style="align-self:flex-end">Copy code</button>
-      </div>
-    </div>
-    <p style="font-size:12px;color:var(--gray);margin-top:12px">Anyone with the link can vote. No login required.</p>
-  `;
-  const footerHtml = `
-    <button class="btn" onclick="closeModal()">Close</button>
-    <button class="btn btn-primary" onclick="closeModal();showView('mypolls')">View all polls</button>
-  `;
+  var bodyHtml = 
+    '<div class="share-box">' +
+      '<label>Share link</label>' +
+      '<div style="display:flex;gap:8px">' +
+        '<input type="text" id="share-link-input" value="' + esc(pollUrl) + '" readonly ' +
+          'style="flex:1;padding:10px 14px;border:1px solid #dadce0;border-radius:8px;font-size:13px;font-family:monospace;background:#f8f9fa;color:#202124" ' +
+          'onclick="this.select()">' +
+        '<button class="btn btn-primary btn-sm" onclick="copyInput(\'share-link-input\')" style="white-space:nowrap">Copy link</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="share-box">' +
+      '<label>Embed code</label>' +
+      '<textarea id="embed-code-input" readonly rows="2" ' +
+        'style="width:100%;padding:10px 14px;border:1px solid #dadce0;border-radius:8px;font-size:12px;font-family:monospace;background:#f8f9fa;color:#202124;resize:none" ' +
+        'onclick="this.select()">' + esc(embedCode) + '</textarea>' +
+      '<button class="btn btn-primary btn-sm" onclick="copyInput(\'embed-code-input\')" style="margin-top:8px">Copy code</button>' +
+    '</div>' +
+    '<p style="font-size:12px;color:#5f6368;margin-top:8px">Anyone with the link can vote. No login required.</p>';
+  
+  var footerHtml = 
+    '<button class="btn" onclick="closeModal()">Close</button>' +
+    '<button class="btn btn-primary" onclick="closeModal();showView(\'mypolls\')">View all polls</button>';
+  
   openModal('Poll created', bodyHtml, footerHtml);
 }
 
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    showToast('Copied to clipboard', 'success');
-  }).catch(() => {
-    showToast('Failed to copy', 'error');
-  });
+function showEmbedModal(slug) {
+  var embedCode = '<script src="' + window.location.origin + '/embed.js" data-poll="' + slug + '"><\/script>';
+  var bodyHtml = 
+    '<p style="color:#5f6368;font-size:13px;margin-bottom:12px">Copy and paste this code into your website:</p>' +
+    '<textarea id="embed-modal-input" readonly rows="2" ' +
+      'style="width:100%;padding:12px;border:1px solid #dadce0;border-radius:8px;font-size:12px;font-family:monospace;background:#f8f9fa;color:#202124;resize:none;margin-bottom:12px" ' +
+      'onclick="this.select()">' + esc(embedCode) + '</textarea>' +
+    '<button class="btn btn-primary" onclick="copyInput(\'embed-modal-input\');closeModal()" style="width:100%;justify-content:center">Copy code</button>';
+  var footerHtml = '<button class="btn" onclick="closeModal()">Close</button>';
+  openModal('Embed code', bodyHtml, footerHtml);
 }
 
 // ============================================================
 // MY POLLS
 // ============================================================
 async function loadMyPolls() {
-  const container = document.getElementById('mypolls-list');
+  var container = document.getElementById('mypolls-list');
   container.innerHTML = '<div class="spinner"></div>';
 
-  const { ok, data } = await api('GET', '/polls');
-  if (!ok) {
+  var result = await api('GET', '/polls');
+  if (!result.ok) {
     container.innerHTML = '<div class="empty-state"><p style="color:var(--red)">Failed to load polls</p></div>';
     return;
   }
 
-  allMyPolls = data.polls || [];
+  allMyPolls = result.data.polls || [];
   renderMyPolls(allMyPolls);
 }
 
 function renderMyPolls(polls) {
-  const container = document.getElementById('mypolls-list');
+  var container = document.getElementById('mypolls-list');
   
   if (polls.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
-        <h4>No polls yet</h4>
-        <p>Create your first poll and share it with the world.</p>
-        <button class="btn btn-primary" onclick="showView('create')">Create poll</button>
-      </div>`;
+    container.innerHTML = 
+      '<div class="empty-state">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>' +
+        '<h4>No polls yet</h4>' +
+        '<p>Create your first poll and share it with the world.</p>' +
+        '<button class="btn btn-primary" onclick="showView(\'create\')">Create poll</button>' +
+      '</div>';
     return;
   }
 
-  container.innerHTML = polls.map(p => {
-    const opts = p.opt || [];
-    const statusBadge = p.sts === 1 ? '<span class="badge badge-active">Active</span>' :
-                        p.sts === 2 ? '<span class="badge badge-ended">Ended</span>' :
-                        '<span class="badge badge-blocked">Blocked</span>';
-    const pollUrl = `${window.location.origin}/poll/${p.slg}`;
+  container.innerHTML = polls.map(function(p) {
+    var opts = p.opt || [];
+    var statusBadge = p.sts === 1 ? '<span class="badge badge-active">Active</span>' :
+                      p.sts === 2 ? '<span class="badge badge-ended">Ended</span>' :
+                      '<span class="badge badge-blocked">Blocked</span>';
+    var pollUrl = window.location.origin + '/poll.html?p=' + p.slg;
+    var embedCode = '<script src="' + window.location.origin + '/embed.js" data-poll="' + p.slg + '"><\/script>';
     
-    return `
-      <div class="card" style="margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
-          <div style="flex:1;min-width:200px">
-            <h4 style="font-family:'Google Sans',sans-serif;font-size:16px;margin-bottom:4px">${esc(p.tit)}</h4>
-            <p style="font-size:12px;color:var(--gray);margin-bottom:4px">${opts.length} options ${statusBadge} Created ${new Date(p.cat).toLocaleDateString()}</p>
-            <p style="font-size:11px;color:var(--gray2);word-break:break-all">${esc(pollUrl)}</p>
-          </div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-            <button class="btn btn-sm" onclick="copyToClipboard('${esc(pollUrl)}')">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-              Link
-            </button>
-            <button class="btn btn-sm" onclick="showEmbedModal('${p.slg}')">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-              Embed
-            </button>
-            ${p.sts === 1 ? `<button class="btn btn-sm btn-danger" onclick="closePoll('${p.id}')">Close</button>` : ''}
-            <button class="btn btn-sm btn-danger" onclick="deletePoll('${p.id}')">Delete</button>
-          </div>
-        </div>
-        ${p.sts === 2 && p.snap ? renderResultsInCard(JSON.parse(p.snap)) : ''}
-      </div>`;
+    var resultsHtml = '';
+    if (p.sts === 2 && p.snap) {
+      var results = p.snap;
+      if (typeof p.snap === 'string') results = JSON.parse(p.snap);
+      var total = results.reduce(function(s, r) { return s + (r.count || 0); }, 0);
+      resultsHtml = 
+        '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">' +
+          '<p style="font-size:11px;color:#5f6368;margin-bottom:8px">Final results — ' + total + ' vote' + (total !== 1 ? 's' : '') + '</p>' +
+          results.map(function(r) {
+            return '<div style="margin-bottom:6px">' +
+              '<div style="display:flex;justify-content:space-between;font-size:12px">' +
+                '<span>' + esc(r.text) + '</span><span style="color:#5f6368">' + (r.count || 0) + '</span>' +
+              '</div>' +
+              '<div class="poll-bar"><div class="poll-bar-fill" style="width:' + (total > 0 ? Math.round((r.count/total)*100) : 0) + '%"></div></div>' +
+            '</div>';
+          }).join('') +
+        '</div>';
+    }
+
+    return '<div class="card" style="margin-bottom:12px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">' +
+        '<div style="flex:1;min-width:200px">' +
+          '<h4 style="font-family:\'Google Sans\',sans-serif;font-size:16px;margin-bottom:4px">' + esc(p.tit) + '</h4>' +
+          '<p style="font-size:12px;color:#5f6368;margin-bottom:4px">' + opts.length + ' options ' + statusBadge + ' Created ' + new Date(p.cat).toLocaleDateString() + '</p>' +
+          '<p style="font-size:11px;color:var(--gray2);word-break:break-all">' + esc(pollUrl) + '</p>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">' +
+          '<button class="btn btn-sm" onclick="window.open(\'/poll.html?p=' + p.slg + '\',\'_blank\')">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> View' +
+          '</button>' +
+          '<button class="btn btn-sm" onclick="copyToClipboard2(\'' + esc(pollUrl) + '\')">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Link' +
+          '</button>' +
+          '<button class="btn btn-sm" onclick="showEmbedModal(\'' + p.slg + '\')">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Embed' +
+          '</button>' +
+          (p.sts === 1 ? '<button class="btn btn-sm btn-danger" onclick="closePoll(\'' + p.id + '\')">Close</button>' : '') +
+          '<button class="btn btn-sm btn-danger" onclick="deletePoll(\'' + p.id + '\')">Delete</button>' +
+        '</div>' +
+      '</div>' +
+      resultsHtml +
+    '</div>';
   }).join('');
 }
 
-function renderResultsInCard(results) {
-  const total = results.reduce((s, r) => s + (r.count || 0), 0);
-  return `
-    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-      <p style="font-size:11px;color:var(--gray);margin-bottom:8px">Final results — ${total} vote${total !== 1 ? 's' : ''}</p>
-      ${results.map(r => `
-        <div style="margin-bottom:6px">
-          <div style="display:flex;justify-content:space-between;font-size:12px">
-            <span>${esc(r.text)}</span><span style="color:var(--gray)">${r.count}</span>
-          </div>
-          <div class="poll-bar"><div class="poll-bar-fill" style="width:${total > 0 ? Math.round((r.count/total)*100) : 0}%;background:var(--accent)"></div></div>
-        </div>
-      `).join('')}
-    </div>`;
+function copyToClipboard2(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    showToast('Link copied', 'success');
+  }).catch(function() {
+    showToast('Failed to copy', 'error');
+  });
 }
 
 function filterMyPolls() {
-  const q = (document.getElementById('mypolls-search')?.value || '').toLowerCase();
+  var q = (document.getElementById('mypolls-search')?.value || '').toLowerCase();
   if (!q) { renderMyPolls(allMyPolls); return; }
-  const filtered = allMyPolls.filter(p => p.tit.toLowerCase().includes(q));
+  var filtered = allMyPolls.filter(function(p) { return p.tit.toLowerCase().indexOf(q) > -1; });
   renderMyPolls(filtered);
-}
-
-function showEmbedModal(slug) {
-  const embedCode = `<script src="${window.location.origin}/embed.js" data-poll="${slug}"><\/script>`;
-  const bodyHtml = `
-    <p style="color:var(--gray);font-size:13px;margin-bottom:12px">Copy and paste this code into your website's HTML:</p>
-    <div style="background:var(--surface);padding:14px;border-radius:var(--radius);font-family:monospace;font-size:12px;word-break:break-all;color:var(--text)">${esc(embedCode)}</div>
-  `;
-  const footerHtml = `
-    <button class="btn" onclick="closeModal()">Close</button>
-    <button class="btn btn-primary" onclick="copyToClipboard('${esc(embedCode.replace(/'/g, "\\'"))}');closeModal()">Copy code</button>
-  `;
-  openModal('Embed code', bodyHtml, footerHtml);
 }
 
 async function closePoll(id) {
   if (!confirm('Close this poll? Votes will be tallied and final results saved.')) return;
-  const { ok } = await api('POST', `/polls/${id}/close`);
-  if (ok) { showToast('Poll closed', 'success'); loadMyPolls(); }
+  var result = await api('POST', '/polls/' + id + '/close');
+  if (result.ok) { showToast('Poll closed', 'success'); loadMyPolls(); }
   else showToast('Failed to close poll', 'error');
 }
 
 async function deletePoll(id) {
   if (!confirm('Delete this poll permanently? This cannot be undone.')) return;
-  const { ok } = await api('DELETE', `/polls/${id}`);
-  if (ok) { showToast('Poll deleted', 'success'); loadMyPolls(); }
+  var result = await api('DELETE', '/polls/' + id);
+  if (result.ok) { showToast('Poll deleted', 'success'); loadMyPolls(); }
   else showToast('Failed to delete poll', 'error');
 }
 
@@ -841,57 +856,50 @@ async function deletePoll(id) {
 function loadSettings() {
   document.getElementById('settings-name').value = user.name || '';
   document.getElementById('settings-email').value = user.email || '';
-  const plan = (user.plan || 'free');
-  const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
-  document.getElementById('settings-plan-detail').textContent = `You are on the ${planName} plan.`;
+  var plan = (user.plan || 'free');
+  var planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+  document.getElementById('settings-plan-detail').textContent = 'You are on the ' + planName + ' plan.';
 }
 
 async function saveSettings() {
-  const alertEl = document.getElementById('settings-alert');
+  var alertEl = document.getElementById('settings-alert');
   alertEl.className = 'alert';
-  const name = document.getElementById('settings-name').value.trim();
-  const password = document.getElementById('settings-password').value;
-
+  var name = document.getElementById('settings-name').value.trim();
   if (!name) { alertEl.className = 'alert alert-error'; alertEl.textContent = 'Name is required'; return; }
 
   user.name = name;
   localStorage.setItem('pollup_user', JSON.stringify(user));
   document.getElementById('sidebar-user-name').textContent = name;
   showToast('Settings saved', 'success');
-  
-  if (password && password.length >= 6) {
-    // In production, add password change endpoint
-    showToast('Password change not implemented in demo', 'info');
-  }
 }
 
 // ============================================================
 // UPGRADE MODAL
 // ============================================================
 function showUpgradeModal() {
-  const plans = {
+  var plans = {
     free: { next: 'pro', price: '$5/month', features: '50 active polls, 5K votes/poll, custom colors, remove branding' },
     pro: { next: 'max', price: '$12/month', features: 'Unlimited polls, unlimited votes, CSV export, API access, priority support' },
     max: { next: null, price: null, features: 'You have everything!' }
   };
-  const current = user.plan || 'free';
-  const plan = plans[current];
+  var current = user.plan || 'free';
+  var plan = plans[current];
 
   if (!plan.next) {
     showToast('You are already on the Max plan', 'info');
     return;
   }
 
-  const bodyHtml = `
-    <p style="color:var(--gray);margin-bottom:16px">Upgrade from <strong>${current.charAt(0).toUpperCase() + current.slice(1)}</strong> to <strong>${plan.next.charAt(0).toUpperCase() + plan.next.slice(1)}</strong></p>
-    <p style="font-size:24px;font-weight:500;font-family:'Google Sans',sans-serif;margin-bottom:8px">${plan.price}</p>
-    <p style="color:var(--gray);font-size:14px;margin-bottom:16px">${plan.features}</p>
-    <p style="font-size:12px;color:var(--gray2)">This is a demo. In production, real payment will be processed.</p>
-  `;
-  const footerHtml = `
-    <button class="btn" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-primary" onclick="activateUpgrade('${plan.next}')">Upgrade now</button>
-  `;
+  var bodyHtml = 
+    '<p style="color:#5f6368;margin-bottom:16px">Upgrade from <strong>' + current.charAt(0).toUpperCase() + current.slice(1) + '</strong> to <strong>' + plan.next.charAt(0).toUpperCase() + plan.next.slice(1) + '</strong></p>' +
+    '<p style="font-size:24px;font-weight:500;font-family:\'Google Sans\',sans-serif;margin-bottom:8px">' + plan.price + '</p>' +
+    '<p style="color:#5f6368;font-size:14px;margin-bottom:16px">' + plan.features + '</p>' +
+    '<p style="font-size:12px;color:#9aa0a6">This is a demo. In production, real payment will be processed.</p>';
+  
+  var footerHtml = 
+    '<button class="btn" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn btn-primary" onclick="activateUpgrade(\'' + plan.next + '\')">Upgrade now</button>';
+  
   openModal('Upgrade Plan', bodyHtml, footerHtml);
 }
 
@@ -899,8 +907,8 @@ async function activateUpgrade(plan) {
   user.plan = plan;
   localStorage.setItem('pollup_user', JSON.stringify(user));
   closeModal();
-  showToast(`Upgraded to ${plan.charAt(0).toUpperCase() + plan.slice(1)}`, 'success');
-  setTimeout(() => location.reload(), 1000);
+  showToast('Upgraded to ' + plan.charAt(0).toUpperCase() + plan.slice(1), 'success');
+  setTimeout(function() { location.reload(); }, 1000);
 }
 
 // ============================================================
