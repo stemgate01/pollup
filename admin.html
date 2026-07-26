@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PollUp — Admin Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Roboto',-apple-system,sans-serif;background:#fff;color:#202124;line-height:1.5;min-height:100vh;display:flex}
+a{color:#1a73e8;text-decoration:none}
+
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:260px;background:#f8f9fa;border-right:1px solid #e8eaed;z-index:200;display:flex;flex-direction:column;overflow-y:auto;transition:transform 0.15s}
+.sidebar-header{height:64px;display:flex;align-items:center;gap:10px;padding:0 20px;font-family:'Google Sans',sans-serif;font-weight:500;font-size:17px;border-bottom:1px solid #e8eaed;flex-shrink:0;background:#1a73e8;color:#fff}
+.sidebar-header svg{width:26px;height:26px}
+.sidebar-nav{flex:1;padding:12px}
+.sidebar-nav button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;border:none;border-radius:8px;background:none;font-size:13px;color:#202124;cursor:pointer;transition:background 0.15s;text-align:left;font-family:inherit}
+.sidebar-nav button:hover{background:#e8eaed}
+.sidebar-nav button.active{background:rgba(26,115,232,0.08);color:#1a73e8;font-weight:500}
+.sidebar-nav button svg{width:18px;height:18px;flex-shrink:0}
+.sidebar-footer{padding:16px 20px;border-top:1px solid #e8eaed;font-size:12px}
+
+.main{margin-left:260px;flex:1;min-width:0}
+.topbar{position:sticky;top:0;z-index:100;height:64px;background:#fff;border-bottom:1px solid #e8eaed;display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px;border-radius:8px}
+.hamburger:hover{background:#f1f3f4}
+.hamburger svg{width:24px;height:24px}
+.topbar-right{display:flex;align-items:center;gap:12px;font-size:13px}
+
+.page-content{padding:24px;max-width:1200px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:#fff;border:1px solid #e8eaed;border-radius:12px;padding:18px;transition:box-shadow 0.15s}
+.stat-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.stat-value{font-family:'Google Sans',sans-serif;font-size:26px;font-weight:500}
+.stat-label{font-size:12px;color:#5f6368;margin-top:4px}
+.card{background:#fff;border:1px solid #e8eaed;border-radius:12px;padding:22px;margin-bottom:16px}
+.card h3{font-family:'Google Sans',sans-serif;font-size:17px;margin-bottom:14px}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid #f1f3f4}
+th{font-weight:500;color:#5f6368;font-size:11px;text-transform:uppercase;letter-spacing:0.4px}
+tr:hover td{background:#fafafa}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;background:#f1f3f4;color:#202124;font-family:inherit;text-decoration:none}
+.btn:hover{background:#e8eaed}
+.btn-primary{background:#1a73e8;color:#fff}
+.btn-primary:hover{background:#1557b0}
+.btn-danger{background:rgba(217,48,37,0.08);color:#d93025}
+.btn-danger:hover{background:rgba(217,48,37,0.15)}
+.btn-success{background:rgba(19,115,51,0.08);color:#137333}
+.btn-warning{background:rgba(227,116,0,0.08);color:#e37400}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:14px}
+
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:12px;font-weight:500;margin-bottom:4px;color:#5f6368}
+.form-group input,.form-group select{width:100%;padding:9px 12px;border:1px solid #dadce0;border-radius:8px;font-size:13px;font-family:inherit}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:#1a73e8;box-shadow:0 0 0 2px rgba(26,115,232,0.12)}
+
+.search-box{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid #dadce0;border-radius:24px;background:#fff;flex:1;min-width:180px}
+.search-box:focus-within{border-color:#1a73e8;box-shadow:0 0 0 2px rgba(26,115,232,0.12)}
+.search-box input{border:none;outline:none;flex:1;font-size:13px;background:none}
+.search-box svg{width:16px;height:16px;color:#5f6368;flex-shrink:0}
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.filter-bar select{padding:8px 12px;border:1px solid #dadce0;border-radius:20px;font-size:12px;background:#fff;cursor:pointer;font-family:inherit}
+
+.badge{display:inline-block;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:500}
+.badge-free{background:#f1f3f4;color:#5f6368}
+.badge-pro{background:rgba(19,115,51,0.08);color:#137333}
+.badge-max{background:rgba(227,116,0,0.08);color:#e37400}
+.badge-active{background:rgba(19,115,51,0.08);color:#137333}
+.badge-blocked{background:rgba(217,48,37,0.08);color:#d93025}
+.badge-ended{background:#f1f3f4;color:#5f6368}
+.badge-on{background:rgba(19,115,51,0.08);color:#137333}
+.badge-off{background:rgba(217,48,37,0.08);color:#d93025}
+
+.admin-subview{display:none}
+.admin-subview.active{display:block}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:300;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:12px;padding:28px;width:90%;max-width:460px;box-shadow:0 8px 32px rgba(0,0,0,0.1);max-height:85vh;overflow-y:auto}
+.modal h3{font-family:'Google Sans',sans-serif;font-size:18px;margin-bottom:16px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+
+.toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:500;z-index:400;opacity:0;transform:translateY(16px);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.1)}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast-success{background:#137333;color:#fff}
+.toast-error{background:#d93025;color:#fff}
+.toast-info{background:#1a73e8;color:#fff}
+
+.spinner{width:24px;height:24px;border:3px solid #e8eaed;border-top-color:#1a73e8;border-radius:50%;animation:spin 0.6s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:40px 20px}
+.empty-state svg{width:56px;height:56px;color:#dadce0;margin-bottom:14px}
+.empty-state h4{font-family:'Google Sans',sans-serif;font-size:16px;margin-bottom:6px}
+.empty-state p{color:#5f6368;font-size:13px}
+
+.storage-bar{background:#f1f3f4;border-radius:6px;height:14px;overflow:hidden;margin:12px 0}
+.storage-bar-fill{height:100%;border-radius:6px;background:#1a73e8;transition:width 0.5s}
+
+.polling-status-card{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-radius:12px;margin-bottom:16px;flex-wrap:wrap;gap:12px}
+.polling-status-card.enabled{background:rgba(19,115,51,0.05);border:1px solid rgba(19,115,51,0.2)}
+.polling-status-card.disabled{background:rgba(217,48,37,0.05);border:1px solid rgba(217,48,37,0.2)}
+.polling-indicator{display:flex;align-items:center;gap:8px;font-weight:500;font-size:14px}
+.polling-dot{width:10px;height:10px;border-radius:50%}
+.polling-dot.on{background:#34a853;box-shadow:0 0 8px rgba(52,168,83,0.4)}
+.polling-dot.off{background:#ea4335;box-shadow:0 0 8px rgba(234,67,53,0.4)}
+
+@media(max-width:860px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .hamburger{display:flex}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:500px){
+  .stat-grid{grid-template-columns:1fr}
+  .page-content{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <svg viewBox="0 0 26 26" fill="none"><rect width="26" height="26" rx="6" fill="#fff" opacity="0.2"/><path d="M6 10h6v10H6zM10 6h6v14h-6zM14 9h6v11h-6z" fill="#fff" opacity="0.9"/></svg>
+    PollUp Admin
+  </div>
+  <nav class="sidebar-nav">
+    <button data-view="dashboard" class="active" onclick="showAdminView('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
+    <button data-view="users" onclick="showAdminView('users')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Users
+    </button>
+    <button data-view="polls" onclick="showAdminView('polls')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+      All Polls
+    </button>
+    <button data-view="reports" onclick="showAdminView('reports')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      Reports
+    </button>
+    <button data-view="storage" onclick="showAdminView('storage')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      Storage
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <button onclick="signOut()" style="background:none;border:none;color:#d93025;font-size:12px;cursor:pointer;font-family:inherit">Sign out</button>
+  </div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <span style="font-family:'Google Sans',sans-serif;font-size:18px;font-weight:500" id="view-title">Dashboard</span>
+    </div>
+    <div class="topbar-right" id="polling-status-badge"></div>
+  </header>
+
+  <div class="page-content">
+
+    <!-- Dashboard -->
+    <div class="admin-subview active" id="admin-dashboard">
+      <div id="polling-control-card"></div>
+      <div class="stat-grid" id="admin-stats"></div>
+    </div>
+
+    <!-- Users -->
+    <div class="admin-subview" id="admin-users">
+      <div class="filter-bar">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="user-search" placeholder="Search by number, name, or email..." oninput="loadUsers()">
+        </div>
+        <select id="user-plan-filter" onchange="loadUsers()">
+          <option value="all">All plans</option><option value="free">Free</option><option value="pro">Pro</option><option value="max">Max</option>
+        </select>
+      </div>
+      <div id="users-list"><div class="spinner"></div></div>
+    </div>
+
+    <!-- Polls -->
+    <div class="admin-subview" id="admin-polls">
+      <div class="filter-bar">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="poll-search" placeholder="Search polls..." oninput="loadPolls()">
+        </div>
+        <select id="poll-status-filter" onchange="loadPolls()">
+          <option value="all">All</option><option value="1">Active</option><option value="2">Ended</option><option value="0">Blocked</option>
+        </select>
+      </div>
+      <div id="polls-list"><div class="spinner"></div></div>
+    </div>
+
+    <!-- Reports -->
+    <div class="admin-subview" id="admin-reports">
+      <div id="reports-list"><div class="spinner"></div></div>
+    </div>
+
+    <!-- Storage -->
+    <div class="admin-subview" id="admin-storage">
+      <div id="storage-content"><div class="spinner"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="gModal">
+  <div class="modal">
+    <h3 id="gModal-title"></h3>
+    <div id="gModal-body"></div>
+    <div class="modal-actions" id="gModal-footer"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// AUTH CHECK — Admin must have key in sessionStorage
+// ============================================================
+const adminKey = sessionStorage.getItem('pollup_admin_key');
+if (!adminKey) { window.location.href = '/admin-login.html'; }
+
+const API = '/api';
+const ADMIN_HEADERS = {
+  'Content-Type': 'application/json',
+  'X-Admin-Key': adminKey
+};
+
+// ============================================================
+// HELPERS
+// ============================================================
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = String(s || '');
+  return d.innerHTML;
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast toast-${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+async function adminApi(method, path, body) {
+  try {
+    const opts = { method, headers: ADMIN_HEADERS };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(API + path, opts);
+    const data = await res.json();
+    return { ok: res.ok, data, status: res.status };
+  } catch(e) {
+    return { ok: false, data: { error: 'Network error' }, status: 0 };
+  }
+}
+
+function openModal(title, bodyHtml, footerHtml) {
+  document.getElementById('gModal-title').textContent = title;
+  document.getElementById('gModal-body').innerHTML = bodyHtml;
+  document.getElementById('gModal-footer').innerHTML = footerHtml;
+  document.getElementById('gModal').classList.add('active');
+}
+function closeModal() { document.getElementById('gModal').classList.remove('active'); }
+document.getElementById('gModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+function signOut() {
+  sessionStorage.removeItem('pollup_admin_key');
+  sessionStorage.removeItem('pollup_admin_unlocked');
+  window.location.href = '/admin-login.html';
+}
+
+// ============================================================
+// VIEW SWITCHING
+// ============================================================
+function showAdminView(view) {
+  document.querySelectorAll('.admin-subview').forEach(v => v.classList.remove('active'));
+  document.getElementById('admin-' + view).classList.add('active');
+  document.querySelectorAll('.sidebar-nav button').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-view="${view}"]`).classList.add('active');
+  document.getElementById('sidebar').classList.remove('open');
+  const titles = { dashboard:'Dashboard', users:'Users', polls:'All Polls', reports:'Reports', storage:'Storage' };
+  document.getElementById('view-title').textContent = titles[view] || view;
+  if (view === 'dashboard') loadDashboard();
+  if (view === 'users') loadUsers();
+  if (view === 'polls') loadPolls();
+  if (view === 'reports') loadReports();
+  if (view === 'storage') loadStorage();
+}
+
+// ============================================================
+// DASHBOARD + POLLING TOGGLE
+// ============================================================
+async function loadDashboard() {
+  const { ok, data } = await adminApi('GET', '/admin/stats');
+  if (!ok) { showToast('Failed to load stats', 'error'); return; }
+
+  document.getElementById('admin-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-value">${data.users||0}</div><div class="stat-label">Total users</div></div>
+    <div class="stat-card"><div class="stat-value">${data.activePolls||0}</div><div class="stat-label">Active polls</div></div>
+    <div class="stat-card"><div class="stat-value">${data.reportedPolls||0}</div><div class="stat-label">Reported polls</div></div>
+    <div class="stat-card"><div class="stat-value">${data.freeUsers||0} / ${data.proUsers||0} / ${data.maxUsers||0}</div><div class="stat-label">Free / Pro / Max</div></div>
+  `;
+
+  renderPollingControl(data.pollingEnabled);
+  updatePollingBadge(data.pollingEnabled);
+}
+
+function renderPollingControl(enabled) {
+  const card = document.getElementById('polling-control-card');
+  card.innerHTML = `
+    <div class="polling-status-card ${enabled ? 'enabled' : 'disabled'}">
+      <div class="polling-indicator">
+        <div class="polling-dot ${enabled ? 'on' : 'off'}"></div>
+        <span>Polling is <strong>${enabled ? 'ENABLED' : 'DISABLED'}</strong></span>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn ${enabled ? 'btn-warning' : 'btn-success'}" onclick="togglePolling()">
+          ${enabled ? 'Stop All Polling' : 'Enable Polling'}
+        </button>
+      </div>
+    </div>
+    <p style="font-size:12px;color:#5f6368;margin-top:4px">
+      ${enabled ? 'Users can create polls and vote.' : 'Poll creation and voting are paused site-wide. Existing results remain visible.'}
+    </p>
+  `;
+}
+
+function updatePollingBadge(enabled) {
+  document.getElementById('polling-status-badge').innerHTML = `
+    <span class="badge ${enabled ? 'badge-on' : 'badge-off'}">${enabled ? 'Polling ON' : 'Polling OFF'}</span>
+  `;
+}
+
+async function togglePolling() {
+  if (!confirm('Toggle polling status for the entire site?')) return;
+  const { ok, data } = await adminApi('POST', '/admin/toggle-polling');
+  if (ok) {
+    showToast(data.pollingEnabled ? 'Polling enabled' : 'Polling stopped', 'success');
+    loadDashboard();
+  } else {
+    showToast('Failed to toggle', 'error');
+  }
+}
+
+// ============================================================
+// USERS
+// ============================================================
+async function loadUsers() {
+  const q = document.getElementById('user-search')?.value || '';
+  const plan = document.getElementById('user-plan-filter')?.value || 'all';
+  const container = document.getElementById('users-list');
+  container.innerHTML = '<div class="spinner"></div>';
+
+  const { ok, data } = await adminApi('GET', `/admin/users?q=${encodeURIComponent(q)}&plan=${plan}`);
+  if (!ok) { container.innerHTML = '<p style="color:#d93025">Failed to load</p>'; return; }
+
+  const users = data.users || [];
+  if (!users.length) { container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><h4>No users found</h4></div>'; return; }
+
+  container.innerHTML = `<table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Plan</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+    ${users.map(u => `
+      <tr>
+        <td style="font-family:monospace;font-size:12px">${esc(u.userno)}</td>
+        <td>${esc(u.nam)}</td><td>${esc(u.eml)}</td>
+        <td><span class="badge badge-${u.pln}">${u.pln}</span></td>
+        <td>${u.sts===1?'<span class="badge badge-active">Active</span>':'<span class="badge badge-blocked">Blocked</span>'}</td>
+        <td style="display:flex;gap:4px;flex-wrap:wrap">
+          ${u.sts===1?`<button class="btn btn-sm btn-danger" onclick="blockUser('${u.id}')">Block</button>`:`<button class="btn btn-sm btn-success" onclick="unblockUser('${u.id}')">Unblock</button>`}
+          <button class="btn btn-sm" onclick="showGrantModal('${u.id}','${esc(u.userno)}','${u.pln}')">Grant</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')">Delete</button>
+        </td>
+      </tr>`).join('')}
+  </tbody></table>`;
+}
+
+async function blockUser(id) { if(!confirm('Block?'))return; await adminApi('POST',`/admin/user/${id}/block`); showToast('Blocked','success'); loadUsers(); }
+async function unblockUser(id) { await adminApi('POST',`/admin/user/${id}/unblock`); showToast('Unblocked','success'); loadUsers(); }
+async function deleteUser(id) { if(!confirm('Delete user + all polls?'))return; await adminApi('DELETE',`/admin/user/${id}`); showToast('Deleted','success'); loadUsers(); }
+
+function showGrantModal(id, userno, currentPlan) {
+  openModal('Grant Plan',
+    `<p style="color:#5f6368;margin-bottom:12px">User <strong>#${userno}</strong></p>
+     <div class="form-group"><label>Plan</label><select id="grant-plan"><option value="free">Free</option><option value="pro">Pro</option><option value="max">Max</option></select></div>
+     <div class="form-group"><label>Days (0=permanent)</label><input type="number" id="grant-days" value="30" min="0"></div>`,
+    `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="doGrant('${id}')">Grant</button>`
+  );
+  document.getElementById('grant-plan').value = currentPlan;
+}
+
+async function doGrant(id) {
+  const plan = document.getElementById('grant-plan').value;
+  const days = parseInt(document.getElementById('grant-days').value)||0;
+  await adminApi('POST',`/admin/user/${id}/grant`,{plan,days});
+  closeModal(); showToast('Plan updated','success'); loadUsers();
+}
+
+// ============================================================
+// POLLS
+// ============================================================
+async function loadPolls() {
+  const q = document.getElementById('poll-search')?.value || '';
+  const sts = document.getElementById('poll-status-filter')?.value || 'all';
+  const container = document.getElementById('polls-list');
+  container.innerHTML = '<div class="spinner"></div>';
+
+  const { ok, data } = await adminApi('GET', `/admin/polls?q=${encodeURIComponent(q)}&status=${sts}`);
+  if (!ok) { container.innerHTML = '<p style="color:#d93025">Failed</p>'; return; }
+
+  const polls = data.polls || [];
+  if (!polls.length) { container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8"/></svg><h4>No polls found</h4></div>'; return; }
+
+  container.innerHTML = `<table><thead><tr><th>Title</th><th>Owner</th><th>Status</th><th>Flags</th><th>Actions</th></tr></thead><tbody>
+    ${polls.map(p => {
+      const sb = p.sts===1?'<span class="badge badge-active">Active</span>':p.sts===2?'<span class="badge badge-ended">Ended</span>':'<span class="badge badge-blocked">Blocked</span>';
+      const rc = p.reportCount||0;
+      return `<tr><td>${esc(p.tit)}</td><td style="font-family:monospace;font-size:11px">#${esc(p.userno)}</td><td>${sb}</td><td>${rc>0?`<span style="color:#d93025;font-weight:500">${rc} report${rc>1?'s':''}</span>`:'—'}</td>
+        <td style="display:flex;gap:4px;flex-wrap:wrap">
+          ${p.sts!==0?`<button class="btn btn-sm btn-danger" onclick="adminBlockPoll('${p.id}')">Block</button>`:`<button class="btn btn-sm btn-success" onclick="adminUnblockPoll('${p.id}')">Unblock</button>`}
+          <button class="btn btn-sm btn-danger" onclick="adminDeletePoll('${p.id}')">Delete</button>
+        </td></tr>`;
+    }).join('')}
+  </tbody></table>`;
+}
+
+async function adminBlockPoll(id) { await adminApi('POST',`/admin/poll/${id}/block`); showToast('Blocked','success'); loadPolls(); }
+async function adminUnblockPoll(id) { await adminApi('POST',`/admin/poll/${id}/unblock`); showToast('Unblocked','success'); loadPolls(); }
+async function adminDeletePoll(id) { if(!confirm('Delete?'))return; await adminApi('DELETE',`/admin/poll/${id}`); showToast('Deleted','success'); loadPolls(); }
+
+// ============================================================
+// REPORTS
+// ============================================================
+async function loadReports() {
+  const container = document.getElementById('reports-list');
+  container.innerHTML = '<div class="spinner"></div>';
+  const { ok, data } = await adminApi('GET', '/admin/polls?q=&status=all');
+  if (!ok) { container.innerHTML = '<p style="color:#d93025">Failed</p>'; return; }
+  const reported = (data.polls||[]).filter(p => (p.reportCount||0) > 0);
+  if (!reported.length) { container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><polyline points="8 14 12 10 16 14"/></svg><h4>No reports</h4><p>All clear</p></div>'; return; }
+  container.innerHTML = `<table><thead><tr><th>Poll</th><th>Owner</th><th>Reports</th><th>Reasons</th><th>Actions</th></tr></thead><tbody>
+    ${reported.map(p => `<tr><td>${esc(p.tit)}</td><td>#${esc(p.userno)}</td><td><strong style="color:#d93025">${p.reportCount}</strong></td><td style="font-size:11px">${esc((p.rpt||[]).map(r=>r.reason).join(', '))}</td>
+      <td style="display:flex;gap:4px"><button class="btn btn-sm btn-danger" onclick="adminBlockPoll('${p.id}')">Block</button><button class="btn btn-sm" onclick="clearReports('${p.id}')">Clear</button></td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+async function clearReports(id) {
+  await adminApi('POST', `/admin/poll/${id}/unblock`);
+  showToast('Reports cleared','success'); loadReports();
+}
+
+// ============================================================
+// STORAGE
+// ============================================================
+async function loadStorage() {
+  const container = document.getElementById('storage-content');
+  container.innerHTML = '<div class="spinner"></div>';
+  const { ok, data } = await adminApi('GET', '/admin/storage');
+  if (!ok) { container.innerHTML = '<p style="color:#d93025">Failed</p>'; return; }
+  container.innerHTML = `
+    <div class="card"><h3>Storage Usage</h3>
+      <p style="font-size:28px;font-family:'Google Sans',sans-serif">${data.totalSize} <span style="font-size:14px;color:#5f6368">of 5 GB</span></p>
+      <div class="storage-bar"><div class="storage-bar-fill" style="width:${Math.min(data.percentUsed,100)}%"></div></div>
+      <p style="font-size:12px;color:#5f6368">${data.percentUsed}% used</p>
+    </div>
+    <div class="card"><h3>Table Breakdown</h3>
+      <table><thead><tr><th>Table</th><th>Rows</th><th>Est. Size</th></tr></thead>
+        <tbody>${(data.stats||[]).map(s=>`<tr><td>${s.table}</td><td>${s.rows}</td><td>${s.estimatedSize}</td></tr>`).join('')}</tbody></table>
+    </div>
+    <p style="color:#5f6368;font-size:12px">Ended polls awaiting cleanup: ${data.endedPolls||0}</p>
+    <button class="btn btn-danger btn-sm" onclick="forceCleanup()">Force cleanup now</button>`;
+}
+
+async function forceCleanup() {
+  if(!confirm('Delete polls ended >7 days ago?'))return;
+  const { ok, data } = await adminApi('POST','/admin/cleanup');
+  if(ok) showToast(`Deleted ${data.deleted||0} polls`,'success'), loadStorage();
+  else showToast('Failed','error');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadDashboard();
+</script>
+</body>
+</html>
