@@ -9,111 +9,39 @@
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:'Roboto',-apple-system,sans-serif;
-  background:#f8f9fa;
-  color:#202124;
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-}
-.login-container{
-  background:#fff;
-  border:1px solid #e8eaed;
-  border-radius:16px;
-  padding:40px;
-  width:100%;
-  max-width:420px;
-  box-shadow:0 2px 12px rgba(0,0,0,0.06);
-}
-.logo{
-  display:flex;align-items:center;gap:10px;
-  justify-content:center;margin-bottom:32px;
-  font-family:'Google Sans',sans-serif;font-size:22px;font-weight:500;
-}
+body{font-family:'Roboto',-apple-system,sans-serif;background:#f8f9fa;color:#202124;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-container{background:#fff;border:1px solid #e8eaed;border-radius:16px;padding:40px;width:100%;max-width:420px;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:32px;font-family:'Google Sans',sans-serif;font-size:22px;font-weight:500}
 .logo svg{width:36px;height:36px}
-h2{
-  font-family:'Google Sans',sans-serif;
-  font-size:20px;margin-bottom:8px;text-align:center;
-}
+h2{font-family:'Google Sans',sans-serif;font-size:20px;margin-bottom:8px;text-align:center}
 .subtitle{text-align:center;color:#5f6368;font-size:13px;margin-bottom:28px}
-.step-indicator{
-  display:flex;justify-content:center;gap:8px;margin-bottom:24px;
-}
-.step-dot{
-  width:8px;height:8px;border-radius:50%;background:#e8eaed;
-  transition:background 0.2s;
-}
+.step-indicator{display:flex;justify-content:center;gap:8px;margin-bottom:24px}
+.step-dot{width:8px;height:8px;border-radius:50%;background:#e8eaed;transition:background 0.2s}
 .step-dot.active{background:#1a73e8}
 .step-dot.done{background:#34a853}
 .form-step{display:none}
 .form-step.active{display:block}
 .form-group{margin-bottom:18px}
-.form-group label{
-  display:block;font-size:13px;font-weight:500;
-  margin-bottom:6px;color:#5f6368;
-}
-.form-group input{
-  width:100%;padding:12px 16px;
-  border:2px solid #e8eaed;border-radius:10px;
-  font-size:15px;font-family:inherit;
-  transition:border 0.15s;
-  background:#fafafa;
-}
-.form-group input:focus{
-  outline:none;border-color:#1a73e8;
-  background:#fff;
-  box-shadow:0 0 0 3px rgba(26,115,232,0.08);
-}
-.password-strength{
-  height:4px;border-radius:2px;margin-top:8px;
-  background:#e8eaed;overflow:hidden;
-}
-.password-strength-bar{
-  height:100%;border-radius:2px;transition:width 0.3s,background 0.3s;
-}
+.form-group label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:#5f6368}
+.form-group input{width:100%;padding:12px 16px;border:2px solid #e8eaed;border-radius:10px;font-size:15px;font-family:inherit;transition:border 0.15s;background:#fafafa}
+.form-group input:focus{outline:none;border-color:#1a73e8;background:#fff;box-shadow:0 0 0 3px rgba(26,115,232,0.08)}
+.password-strength{height:4px;border-radius:2px;margin-top:8px;background:#e8eaed;overflow:hidden}
+.password-strength-bar{height:100%;border-radius:2px;transition:width 0.3s,background 0.3s}
 .strength-text{font-size:11px;margin-top:4px;color:#5f6368}
-.btn{
-  width:100%;padding:12px;border:none;border-radius:10px;
-  font-size:15px;font-weight:500;cursor:pointer;
-  transition:all 0.15s;font-family:inherit;
-  background:#1a73e8;color:#fff;
-}
+.btn{width:100%;padding:12px;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;transition:all 0.15s;font-family:inherit;background:#1a73e8;color:#fff}
 .btn:hover{background:#1557b0;box-shadow:0 2px 8px rgba(26,115,232,0.3)}
 .btn:disabled{opacity:0.5;cursor:not-allowed}
-.btn-outline{
-  background:#fff;color:#1a73e8;
-  border:2px solid #e8eaed;margin-top:8px;
-}
+.btn-outline{background:#fff;color:#1a73e8;border:2px solid #e8eaed;margin-top:8px}
 .btn-outline:hover{background:#f8f9fa;box-shadow:none}
-.alert{
-  padding:12px 16px;border-radius:10px;
-  font-size:13px;margin-bottom:18px;display:none;
-}
+.alert{padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:18px;display:none}
 .alert-error{background:#fce8e6;color:#c5221f;display:block}
 .alert-success{background:#e6f4ea;color:#137333;display:block}
-.alert-info{background:#e8f0fe;color:#1967d2;display:block}
-.requirements{
-  font-size:12px;color:#5f6368;margin-top:8px;
-}
+.requirements{font-size:12px;color:#5f6368;margin-top:8px}
 .requirements span{display:block;margin-bottom:2px}
 .requirements span.met{color:#137333}
 .requirements span.unmet{color:#c5221f}
-.spinner{
-  width:20px;height:20px;border:2px solid rgba(255,255,255,0.3);
-  border-top-color:#fff;border-radius:50%;
-  animation:spin 0.6s linear infinite;
-  display:inline-block;margin-right:8px;vertical-align:middle;
-}
+.spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
-.fingerprint-section{
-  text-align:center;padding:16px;
-  background:#f8f9fa;border-radius:10px;
-  margin-bottom:18px;
-}
-.lock-icon{width:40px;height:40px;color:#5f6368;margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -129,21 +57,16 @@ h2{
     <div class="step-dot" id="dot-step2"></div>
   </div>
 
-  <!-- Step 1: Admin Password -->
   <div class="form-step active" id="step1">
     <h2>Admin Access</h2>
     <p class="subtitle">Enter the secure admin password</p>
     <div id="alert-step1" class="alert"></div>
     <form id="form-step1">
-      <div class="form-group">
-        <label>Admin Password</label>
-        <input type="password" id="admin-password" placeholder="Enter admin password" autocomplete="off" required>
-      </div>
+      <div class="form-group"><label>Admin Password</label><input type="password" id="admin-password" placeholder="Enter admin password" autocomplete="off" required></div>
       <button type="submit" class="btn">Continue</button>
     </form>
   </div>
 
-  <!-- Step 2: Master Passphrase -->
   <div class="form-step" id="step2">
     <h2 id="step2-title">Master Passphrase</h2>
     <p class="subtitle" id="step2-subtitle">Enter your encryption passphrase</p>
@@ -152,16 +75,11 @@ h2{
       <div class="form-group" id="passphrase-group">
         <label id="passphrase-label">Passphrase</label>
         <input type="password" id="master-passphrase" placeholder="Enter master passphrase" autocomplete="off">
-        <div class="password-strength" id="strength-bar" style="display:none">
-          <div class="password-strength-bar" id="strength-fill"></div>
-        </div>
+        <div class="password-strength" id="strength-bar" style="display:none"><div class="password-strength-bar" id="strength-fill"></div></div>
         <div class="strength-text" id="strength-text"></div>
         <div class="requirements" id="requirements-list"></div>
       </div>
-      <div class="form-group" id="confirm-group" style="display:none">
-        <label>Confirm Passphrase</label>
-        <input type="password" id="master-passphrase-confirm" placeholder="Re-enter passphrase" autocomplete="off">
-      </div>
+      <div class="form-group" id="confirm-group" style="display:none"><label>Confirm Passphrase</label><input type="password" id="master-passphrase-confirm" placeholder="Re-enter passphrase" autocomplete="off"></div>
       <button type="submit" class="btn" id="btn-step2">Verify</button>
       <button type="button" class="btn btn-outline" id="btn-back" style="display:none" onclick="goToStep1()">Back</button>
     </form>
@@ -169,135 +87,83 @@ h2{
 </div>
 
 <script>
-const API = '/api';
-const ADMIN_PASSWORD = 'secured_hidden';
-let isFirstTime = false;
-let passphraseSalt = null;
+var API = '/api';
+var ADMIN_PASSWORD = 'secured_hidden';
+var isFirstTime = false;
+var passphraseSalt = null;
 
-// ============================================================
-// HELPERS
-// ============================================================
+// Check if already logged in
+var existingKey = localStorage.getItem('pollup_admin_key');
+var expiry = localStorage.getItem('pollup_admin_expiry');
+if (existingKey && expiry && Date.now() < parseInt(expiry)) {
+  window.location.href = '/admin.html';
+}
+
 function showAlert(step, msg, type) {
-  const el = document.getElementById('alert-' + step);
+  var el = document.getElementById('alert-' + step);
   el.className = 'alert alert-' + type;
   el.textContent = msg;
 }
-
-function clearAlert(step) {
-  document.getElementById('alert-' + step).className = 'alert';
-}
-
+function clearAlert(step) { document.getElementById('alert-' + step).className = 'alert'; }
 function setStep(step) {
-  document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.form-step').forEach(function(s) { s.classList.remove('active'); });
   document.getElementById('step' + step).classList.add('active');
-  
   document.getElementById('dot-step1').className = 'step-dot ' + (step === 1 ? 'active' : 'done');
   document.getElementById('dot-step2').className = 'step-dot ' + (step === 2 ? 'active' : '');
-  
-  if (step === 2 && document.getElementById('dot-step1').className.includes('done')) {
-    document.getElementById('dot-step1').className = 'step-dot done';
-  }
 }
 
-// ============================================================
-// CRYPTO HELPERS
-// ============================================================
 async function sha256(text) {
-  const enc = new TextEncoder().encode(text);
-  const hash = await crypto.subtle.digest('SHA-256', enc);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+  var hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(hash)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
 }
-
 function generateSalt() {
-  return Array.from(crypto.getRandomValues(new Uint8Array(16)))
-    .map(b => b.toString(16).padStart(2, '0')).join('');
+  return Array.from(crypto.getRandomValues(new Uint8Array(16))).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
 }
-
 async function deriveKey(passphrase, salt) {
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']
-  );
-  const key = await crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' },
-    keyMaterial, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']
-  );
-  const rawKey = await crypto.subtle.exportKey('raw', key);
-  return btoa(String.fromCharCode(...new Uint8Array(rawKey)));
+  var enc = new TextEncoder();
+  var keyMaterial = await crypto.subtle.importKey('raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+  var key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+  var rawKey = await crypto.subtle.exportKey('raw', key);
+  return btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey)));
 }
-
 async function encryptData(plaintext, keyBase64) {
-  const keyRaw = Uint8Array.from(atob(keyBase64), c => c.charCodeAt(0));
-  const key = await crypto.subtle.importKey('raw', keyRaw, 'AES-GCM', false, ['encrypt']);
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const enc = new TextEncoder();
-  const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv }, key, enc.encode(plaintext)
-  );
-  const combined = new Uint8Array(iv.length + encrypted.byteLength);
+  var keyRaw = Uint8Array.from(atob(keyBase64), function(c) { return c.charCodeAt(0); });
+  var key = await crypto.subtle.importKey('raw', keyRaw, 'AES-GCM', false, ['encrypt']);
+  var iv = crypto.getRandomValues(new Uint8Array(12));
+  var encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, new TextEncoder().encode(plaintext));
+  var combined = new Uint8Array(iv.length + encrypted.byteLength);
   combined.set(iv);
   combined.set(new Uint8Array(encrypted), iv.length);
-  return btoa(String.fromCharCode(...combined));
+  return btoa(String.fromCharCode.apply(null, combined));
 }
 
-async function decryptData(cipherBase64, keyBase64) {
-  try {
-    const keyRaw = Uint8Array.from(atob(keyBase64), c => c.charCodeAt(0));
-    const key = await crypto.subtle.importKey('raw', keyRaw, 'AES-GCM', false, ['decrypt']);
-    const combined = Uint8Array.from(atob(cipherBase64), c => c.charCodeAt(0));
-    const iv = combined.slice(0, 12);
-    const data = combined.slice(12);
-    const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv }, key, data
-    );
-    return new TextDecoder().decode(decrypted);
-  } catch {
-    return null;
-  }
-}
-
-// ============================================================
-// STEP 1: Admin Password
-// ============================================================
 document.getElementById('form-step1').addEventListener('submit', async function(e) {
   e.preventDefault();
   clearAlert('step1');
-  
-  const password = document.getElementById('admin-password').value;
-  const btn = this.querySelector('button');
+  var password = document.getElementById('admin-password').value;
+  var btn = this.querySelector('button');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Verifying...';
 
-  // Hash and check
-  const hashedInput = await sha256(password);
-  const hashedRequired = await sha256(ADMIN_PASSWORD);
-
+  var hashedInput = await sha256(password);
+  var hashedRequired = await sha256(ADMIN_PASSWORD);
   if (hashedInput !== hashedRequired) {
     showAlert('step1', 'Invalid admin password', 'error');
-    btn.disabled = false;
-    btn.textContent = 'Continue';
-    return;
+    btn.disabled = false; btn.textContent = 'Continue'; return;
   }
 
-  // Check if passphrase exists in D1
-  const res = await fetch(API + '/admin/check-passphrase');
-  const data = await res.json();
+  var res = await fetch(API + '/admin/check-passphrase');
+  var data = await res.json();
 
   if (data.exists && data.salt) {
-    // Returning admin — verify existing passphrase
-    isFirstTime = false;
-    passphraseSalt = data.salt;
+    isFirstTime = false; passphraseSalt = data.salt;
     document.getElementById('step2-title').textContent = 'Verify Passphrase';
     document.getElementById('step2-subtitle').textContent = 'Enter your master passphrase to unlock';
     document.getElementById('passphrase-label').textContent = 'Passphrase';
     document.getElementById('confirm-group').style.display = 'none';
     document.getElementById('btn-step2').textContent = 'Unlock';
     document.getElementById('btn-back').style.display = 'none';
-    document.getElementById('strength-bar').style.display = 'none';
-    document.getElementById('strength-text').textContent = '';
-    document.getElementById('requirements-list').innerHTML = '';
   } else {
-    // First time — create passphrase
     isFirstTime = true;
     document.getElementById('step2-title').textContent = 'Create Master Passphrase';
     document.getElementById('step2-subtitle').textContent = 'Set a strong passphrase to secure admin access';
@@ -306,180 +172,94 @@ document.getElementById('form-step1').addEventListener('submit', async function(
     document.getElementById('btn-step2').textContent = 'Create and Enter';
     document.getElementById('btn-back').style.display = 'block';
     document.getElementById('strength-bar').style.display = 'block';
-    document.getElementById('requirements-list').innerHTML = `
-      <span class="unmet" id="req-length">At least 12 characters</span>
-      <span class="unmet" id="req-upper">At least one uppercase letter</span>
-      <span class="unmet" id="req-lower">At least one lowercase letter</span>
-      <span class="unmet" id="req-number">At least one number</span>
-      <span class="unmet" id="req-special">At least one special character</span>
-    `;
-    
-    document.getElementById('master-passphrase').addEventListener('input', updatePassphraseStrength);
+    document.getElementById('requirements-list').innerHTML = '<span class="unmet" id="req-length">At least 12 characters</span><span class="unmet" id="req-upper">At least one uppercase letter</span><span class="unmet" id="req-lower">At least one lowercase letter</span><span class="unmet" id="req-number">At least one number</span><span class="unmet" id="req-special">At least one special character</span>';
+    document.getElementById('master-passphrase').addEventListener('input', function() {
+      var val = this.value;
+      var score = 0;
+      if (val.length >= 12) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[a-z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+      var colors = ['#c5221f', '#e37400', '#f9ab00', '#34a853', '#137333'];
+      var labels = ['Very weak', 'Weak', 'Fair', 'Strong', 'Very strong'];
+      document.getElementById('strength-fill').style.width = Math.max(score * 20, 5) + '%';
+      document.getElementById('strength-fill').style.background = colors[score - 1] || colors[0];
+      document.getElementById('strength-text').textContent = score > 0 ? labels[score - 1] : '';
+      document.getElementById('req-length').className = val.length >= 12 ? 'met' : 'unmet';
+      document.getElementById('req-upper').className = /[A-Z]/.test(val) ? 'met' : 'unmet';
+      document.getElementById('req-lower').className = /[a-z]/.test(val) ? 'met' : 'unmet';
+      document.getElementById('req-number').className = /[0-9]/.test(val) ? 'met' : 'unmet';
+      document.getElementById('req-special').className = /[^A-Za-z0-9]/.test(val) ? 'met' : 'unmet';
+    });
   }
 
-  // Store admin password verification in sessionStorage
-  sessionStorage.setItem('pollup_admin_pwd_verified', 'true');
-  
+  localStorage.setItem('pollup_admin_pwd_verified', 'true');
   setStep(2);
-  btn.disabled = false;
-  btn.textContent = 'Continue';
+  btn.disabled = false; btn.textContent = 'Continue';
 });
-
-function updatePassphraseStrength() {
-  const val = document.getElementById('master-passphrase').value;
-  const bar = document.getElementById('strength-fill');
-  const text = document.getElementById('strength-text');
-  
-  let score = 0;
-  if (val.length >= 12) score++;
-  if (/[A-Z]/.test(val)) score++;
-  if (/[a-z]/.test(val)) score++;
-  if (/[0-9]/.test(val)) score++;
-  if (/[^A-Za-z0-9]/.test(val)) score++;
-  
-  const colors = ['#c5221f', '#e37400', '#f9ab00', '#34a853', '#137333'];
-  const labels = ['Very weak', 'Weak', 'Fair', 'Strong', 'Very strong'];
-  
-  bar.style.width = Math.max(score * 20, 5) + '%';
-  bar.style.background = colors[score - 1] || colors[0];
-  text.textContent = score > 0 ? labels[score - 1] : '';
-  
-  document.getElementById('req-length').className = val.length >= 12 ? 'met' : 'unmet';
-  document.getElementById('req-upper').className = /[A-Z]/.test(val) ? 'met' : 'unmet';
-  document.getElementById('req-lower').className = /[a-z]/.test(val) ? 'met' : 'unmet';
-  document.getElementById('req-number').className = /[0-9]/.test(val) ? 'met' : 'unmet';
-  document.getElementById('req-special').className = /[^A-Za-z0-9]/.test(val) ? 'met' : 'unmet';
-}
 
 function goToStep1() {
   setStep(1);
-  sessionStorage.removeItem('pollup_admin_pwd_verified');
+  localStorage.removeItem('pollup_admin_pwd_verified');
 }
 
-// ============================================================
-// STEP 2: Master Passphrase
-// ============================================================
 document.getElementById('form-step2').addEventListener('submit', async function(e) {
   e.preventDefault();
   clearAlert('step2');
-  
-  if (!sessionStorage.getItem('pollup_admin_pwd_verified')) {
+  if (!localStorage.getItem('pollup_admin_pwd_verified')) {
     showAlert('step2', 'Session expired. Please re-enter admin password.', 'error');
-    setTimeout(() => goToStep1(), 1500);
+    setTimeout(function() { goToStep1(); }, 1500);
     return;
   }
-
-  const passphrase = document.getElementById('master-passphrase').value;
-  const btn = document.getElementById('btn-step2');
-  
-  if (!passphrase) {
-    showAlert('step2', 'Passphrase is required', 'error');
-    return;
-  }
-
+  var passphrase = document.getElementById('master-passphrase').value;
+  var btn = document.getElementById('btn-step2');
+  if (!passphrase) { showAlert('step2', 'Passphrase is required', 'error'); return; }
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>' + (isFirstTime ? 'Setting up...' : 'Verifying...');
 
   try {
     if (isFirstTime) {
-      // Validate passphrase strength
-      const confirm = document.getElementById('master-passphrase-confirm').value;
-      if (passphrase !== confirm) {
-        showAlert('step2', 'Passphrases do not match', 'error');
-        btn.disabled = false;
-        btn.textContent = 'Create and Enter';
-        return;
-      }
-      
+      var confirm = document.getElementById('master-passphrase-confirm').value;
+      if (passphrase !== confirm) { showAlert('step2', 'Passphrases do not match', 'error'); btn.disabled = false; btn.textContent = 'Create and Enter'; return; }
       if (passphrase.length < 12 || !/[A-Z]/.test(passphrase) || !/[a-z]/.test(passphrase) || !/[0-9]/.test(passphrase) || !/[^A-Za-z0-9]/.test(passphrase)) {
-        showAlert('step2', 'Passphrase does not meet strength requirements', 'error');
-        btn.disabled = false;
-        btn.textContent = 'Create and Enter';
-        return;
+        showAlert('step2', 'Passphrase does not meet requirements', 'error'); btn.disabled = false; btn.textContent = 'Create and Enter'; return;
       }
+      var salt = generateSalt();
+      var key = await deriveKey(passphrase, salt);
+      var testEncrypted = await encryptData('__admin_verify__', key);
+      var res = await fetch(API + '/admin/setup-passphrase', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ salt: salt, testEncrypted: testEncrypted }) });
+      if (!res.ok) { showAlert('step2', 'Failed to save passphrase', 'error'); btn.disabled = false; btn.textContent = 'Create and Enter'; return; }
 
-      // Generate salt + derive key
-      const salt = generateSalt();
-      const key = await deriveKey(passphrase, salt);
-      
-      // Encrypt verification test
-      const testEncrypted = await encryptData('__admin_verify__', key);
-      
-      // Save to D1
-      const res = await fetch(API + '/admin/setup-passphrase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ salt, testEncrypted })
-      });
-      
-      if (!res.ok) {
-        showAlert('step2', 'Failed to save passphrase', 'error');
-        btn.disabled = false;
-        btn.textContent = 'Create and Enter';
-        return;
-      }
-
-      // Store key in sessionStorage
-      sessionStorage.setItem('pollup_admin_key', key);
-      sessionStorage.setItem('pollup_admin_unlocked', 'true');
-      
+      localStorage.setItem('pollup_admin_key', key);
+      localStorage.setItem('pollup_admin_unlocked', 'true');
+      localStorage.setItem('pollup_admin_expiry', Date.now() + (7 * 24 * 60 * 60 * 1000));
       showAlert('step2', 'Passphrase set. Redirecting...', 'success');
-      setTimeout(() => { window.location.href = '/admin.html'; }, 800);
-      
+      setTimeout(function() { window.location.href = '/admin.html'; }, 800);
     } else {
-      // Verify existing passphrase
-      const key = await deriveKey(passphrase, passphraseSalt);
-      
-      // Send derived key to server for verification
-      const res = await fetch(API + '/admin/verify-passphrase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key })
-      });
-      
-      const data = await res.json();
-      
-      if (!data.valid) {
-        showAlert('step2', 'Invalid passphrase', 'error');
-        btn.disabled = false;
-        btn.textContent = 'Unlock';
-        return;
-      }
+      var key = await deriveKey(passphrase, passphraseSalt);
+      var res = await fetch(API + '/admin/verify-passphrase', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: key }) });
+      var data = await res.json();
+      if (!data.valid) { showAlert('step2', 'Invalid passphrase', 'error'); btn.disabled = false; btn.textContent = 'Unlock'; return; }
 
-      // Store key in sessionStorage
-      sessionStorage.setItem('pollup_admin_key', key);
-      sessionStorage.setItem('pollup_admin_unlocked', 'true');
-      
+      localStorage.setItem('pollup_admin_key', key);
+      localStorage.setItem('pollup_admin_unlocked', 'true');
+      localStorage.setItem('pollup_admin_expiry', Date.now() + (7 * 24 * 60 * 60 * 1000));
       showAlert('step2', 'Verified. Redirecting...', 'success');
-      setTimeout(() => { window.location.href = '/admin.html'; }, 500);
+      setTimeout(function() { window.location.href = '/admin.html'; }, 500);
     }
-  } catch (err) {
+  } catch(err) {
     showAlert('step2', 'An error occurred. Please try again.', 'error');
-    btn.disabled = false;
-    btn.textContent = isFirstTime ? 'Create and Enter' : 'Unlock';
+    btn.disabled = false; btn.textContent = isFirstTime ? 'Create and Enter' : 'Unlock';
   }
 });
 
-// ============================================================
-// INIT: Check if already on step 2 (page refresh during setup)
-// ============================================================
-if (sessionStorage.getItem('pollup_admin_pwd_verified') === 'true') {
-  // Re-check passphrase existence
-  fetch(API + '/admin/check-passphrase')
-    .then(r => r.json())
-    .then(data => {
-      if (data.exists && data.salt) {
-        isFirstTime = false;
-        passphraseSalt = data.salt;
-        document.getElementById('step2-title').textContent = 'Verify Passphrase';
-        document.getElementById('step2-subtitle').textContent = 'Enter your master passphrase to unlock';
-        document.getElementById('passphrase-label').textContent = 'Passphrase';
-        document.getElementById('confirm-group').style.display = 'none';
-        document.getElementById('btn-step2').textContent = 'Unlock';
-        document.getElementById('btn-back').style.display = 'none';
-      }
-      setStep(2);
-    });
+// Init: check if already past step 1
+if (localStorage.getItem('pollup_admin_pwd_verified') === 'true') {
+  fetch(API + '/admin/check-passphrase').then(function(r) { return r.json(); }).then(function(data) {
+    if (data.exists && data.salt) { isFirstTime = false; passphraseSalt = data.salt; document.getElementById('step2-title').textContent = 'Verify Passphrase'; document.getElementById('step2-subtitle').textContent = 'Enter your master passphrase to unlock'; document.getElementById('passphrase-label').textContent = 'Passphrase'; document.getElementById('confirm-group').style.display = 'none'; document.getElementById('btn-step2').textContent = 'Unlock'; document.getElementById('btn-back').style.display = 'none'; }
+    setStep(2);
+  });
 }
 </script>
 </body>
